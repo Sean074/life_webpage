@@ -516,6 +516,43 @@ td.num {
   max-width: 480px;
 }
 
+/* Margin gallery */
+
+.margin-gallery {
+  position: fixed;
+  top: calc(48px + 2rem);
+  left: max(0.5rem, calc(50vw - 360px - 106px));
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--border);
+}
+
+.margin-gallery a {
+  display: block;
+  text-decoration: none;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.margin-gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(100%);
+}
+
+.margin-gallery img:hover {
+  filter: grayscale(100%);
+}
+
+@media (max-width: 900px) {
+  .margin-gallery { display: none; }
+}
+
 /* Quote footer */
 
 .quote-footer {

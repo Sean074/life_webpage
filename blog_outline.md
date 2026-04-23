@@ -10,6 +10,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 - Brief intro (name, one-line bio)
 - Links to the main public sections: Blog, Gallery
 - No hero image, no animation — plain text
+- in the left margin include thumbnail of three images from the gallery.  these should change with page reload.
 
 ---
 

@@ -1,4 +1,5 @@
 import io
+import random
 from pathlib import Path
 
 from PIL import Image, ImageOps
@@ -111,6 +112,11 @@ def remove_image(image_id: int):
     if thumb.exists():
         thumb.unlink()
     gallery_model.delete_image(image_id)
+
+
+def random_gallery_thumbs(n: int = 3) -> list[dict]:
+    images = get_all_images()
+    return random.sample(images, min(n, len(images)))
 
 
 def generate_missing_thumbs():
