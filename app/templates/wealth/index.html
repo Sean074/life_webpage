@@ -218,12 +218,48 @@
     options: baseOpts,
   });
 
-  const projLabels = {{ projection | map(attribute='year')      | list | tojson }};
-  const projData   = {{ projection | map(attribute='net_worth') | list | tojson }};
+  const backProj  = {{ backward_projection | tojson }};
+  const fwdProj   = {{ projection | tojson }};
+  const netWorth  = {{ net_worth }};
+
+  const currentYear = backProj[backProj.length - 1].year;
+  const cutoffYear  = currentYear - 5;
+
+  // Aggregate history by year (last snapshot per year), limited to 5-year window
+  const histByYear = {};
+  histLabels.forEach((d, i) => {
+    const y = parseInt(d.slice(0, 4));
+    if (y >= cutoffYear && y <= currentYear) histByYear[y] = histData[i];
+  });
+
+  // Unified x-axis: all years from cutoff through horizon, deduped and sorted
+  const allYears = [...new Set([
+    ...backProj.map(r => r.year),
+    ...fwdProj.map(r => r.year),
+    ...Object.keys(histByYear).map(Number),
+  ])].sort((a, b) => a - b);
+
+  const backMap = Object.fromEntries(backProj.map(r => [r.year, r.net_worth]));
+  const fwdMap  = Object.fromEntries(fwdProj.map(r => [r.year, r.net_worth]));
+
+  // Backward projection: dashed, cy-5…cy only
+  const backDataArr = allYears.map(y => backMap[y] ?? null);
+  // Forward projection: solid, anchored at cy then forward
+  const fwdDataArr  = allYears.map(y => y === currentYear ? netWorth : (fwdMap[y] ?? null));
+  // Actual net worth: grey, history snapshots in the 5-year window
+  const actualDataArr = allYears.map(y => histByYear[y] ?? null);
+
   new Chart(document.getElementById('projection-chart'), {
     type: 'line',
-    data: { labels: projLabels, datasets: [{ data: projData, borderColor: accent, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: accent, tension: 0.1, fill: false }] },
-    options: baseOpts,
+    data: {
+      labels: allYears,
+      datasets: [
+        { data: backDataArr,   borderColor: accent, borderWidth: 1.5, borderDash: [5, 5], pointRadius: 2, pointBackgroundColor: accent, tension: 0.1, fill: false },
+        { data: fwdDataArr,    borderColor: accent, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: accent, tension: 0.1, fill: false },
+        { data: actualDataArr, borderColor: '#888',  borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#888', tension: 0.1, fill: false },
+      ],
+    },
+    options: { ...baseOpts, plugins: { legend: { display: false } } },
   });
 
   function toggleEdit(id) {

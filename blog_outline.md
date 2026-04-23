@@ -75,6 +75,8 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
   - Annual investment return rate
   - Outputs per projected year: annual income, annual spending, annual investment growth, total net wealth
   - Displayed as a line chart to a user-defined horizon
+  - project backwards by 5 years use the projection model use a "---" line style
+  - add the Net Worth line to the projection plot. line should be "grey" (limit to 5 years prior from current date).
 - Admin only: add/update accounts, adjust projection parameters
   - update the value in a given account, use a fom require all accounts to be updated
    - use prior value as default

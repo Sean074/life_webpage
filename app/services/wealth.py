@@ -118,6 +118,28 @@ def current_net_worth(accounts: list[dict]) -> float:
     return round(sum(a["balance"] for a in accounts), 2)
 
 
+def run_backward_projection(params: dict, start_net_worth: float) -> list[dict]:
+    """Project backwards 5 years from current net worth using inverted model."""
+    current_year = date.today().year
+    salary = float(params["annual_salary"])
+    spending = float(params["annual_spending"])
+    salary_growth = float(params["salary_growth_rate"])
+    inflation = float(params["inflation_rate"])
+    inv_return = float(params["investment_return_rate"])
+
+    rows = [{"year": current_year, "net_worth": round(start_net_worth, 0)}]
+    nw = start_net_worth
+    for k in range(1, 6):
+        # nw_prev = (nw_current - income_at_prev + spending_at_prev) / (1 + r)
+        income_k = salary / ((1 + salary_growth) ** k)
+        spending_k = spending / ((1 + inflation) ** k)
+        nw = (nw - income_k + spending_k) / (1 + inv_return)
+        rows.append({"year": current_year - k, "net_worth": round(nw, 0)})
+
+    rows.sort(key=lambda x: x["year"])
+    return rows
+
+
 def run_projection(params: dict, start_net_worth: float) -> list[dict]:
     current_year = date.today().year
     horizon = int(params["horizon_year"])

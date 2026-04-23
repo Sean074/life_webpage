@@ -35,6 +35,7 @@ async def wealth_index(request: Request, user: dict = Depends(require_auth)):
     history = wealth_svc.load_history()
     net_worth = wealth_svc.current_net_worth(accounts)
     projection = wealth_svc.run_projection(params, net_worth)
+    backward_projection = wealth_svc.run_backward_projection(params, net_worth)
 
     csrf_token = secrets.token_hex(16)
     response = templates.TemplateResponse("wealth/index.html", {
@@ -46,6 +47,7 @@ async def wealth_index(request: Request, user: dict = Depends(require_auth)):
         "history": history,
         "net_worth": net_worth,
         "projection": projection,
+        "backward_projection": backward_projection,
         "account_types": ACCOUNT_TYPES,
         "csrf_token": csrf_token,
         "today": date.today().isoformat(),
