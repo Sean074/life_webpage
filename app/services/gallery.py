@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from app.models import gallery as gallery_model
 
@@ -29,6 +29,7 @@ _TRANSPOSE = {
 def _make_thumb(src_path: Path, thumb_path: Path, rotation: int = 0):
     thumb_path.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(src_path) as img:
+        img = ImageOps.exif_transpose(img)
         img = img.convert("RGB")
         w, h = img.size
         side = min(w, h)
