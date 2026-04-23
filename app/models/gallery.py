@@ -1,0 +1,85 @@
+import sqlite3
+from pathlib import Path
+
+DB_PATH = Path(__file__).parent.parent.parent / "data" / "gallery.db"
+
+
+def _connect():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def init_db():
+    with _connect() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS gallery_images (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                category    TEXT NOT NULL,
+                filename    TEXT NOT NULL,
+                title       TEXT NOT NULL DEFAULT '',
+                uploaded_at TEXT NOT NULL DEFAULT (date('now')),
+                rotation    INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_gallery_images_category ON gallery_images (category)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_gallery_images_uploaded ON gallery_images (uploaded_at)"
+        )
+
+
+def get_all_images() -> list[dict]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM gallery_images ORDER BY uploaded_at DESC, id DESC"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_images_by_category(category: str) -> list[dict]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM gallery_images WHERE category = ? ORDER BY uploaded_at DESC, id DESC",
+            (category,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_image(image_id: int) -> "dict | None":
+    with _connect() as conn:
+        row = conn.execute(
+            "SELECT * FROM gallery_images WHERE id = ?", (image_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def insert_image(category: str, filename: str, title: str) -> int:
+    with _connect() as conn:
+        cur = conn.execute(
+            "INSERT INTO gallery_images (category, filename, title) VALUES (?, ?, ?)",
+            (category, filename, title),
+        )
+        return cur.lastrowid
+
+
+def delete_image(image_id: int):
+    with _connect() as conn:
+        conn.execute("DELETE FROM gallery_images WHERE id = ?", (image_id,))
+
+
+def update_rotation(image_id: int, rotation: int):
+    with _connect() as conn:
+        conn.execute(
+            "UPDATE gallery_images SET rotation = ? WHERE id = ?", (rotation, image_id)
+        )
+
+
+def all_categories() -> list[str]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT category FROM gallery_images ORDER BY category"
+        ).fetchall()
+        return [r["category"] for r in rows]

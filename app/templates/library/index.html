@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Library{% endblock %}
+{% block content %}
+<h1>Library</h1>
+
+<hr>
+
+<h2>Search</h2>
+<p>Find documents by keyword, discipline, tag, or rating.</p>
+<a href="/library/search" class="btn">Search</a>
+
+<hr>
+
+<h2>Sync</h2>
+<p>Check for PDFs in the library folder not yet in the database.</p>
+<a href="/library/sync" class="btn">Run sync check</a>
+
+<hr>
+
+<h2>Review</h2>
+<p>Browse all items and fill in missing author, description, or rating.</p>
+<a href="/library/review" class="btn">Review items</a>
+{% endblock %}

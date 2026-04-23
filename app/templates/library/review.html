@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Review — Library{% endblock %}
+{% block content %}
+<h1>Review</h1>
+
+{% if incomplete_ids %}
+  <p><small>{{ incomplete_ids|length }} item(s) with missing fields are shown in muted text.</small></p>
+{% endif %}
+
+<table>
+  <thead>
+    <tr>
+      <th>Ref</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Discipline</th>
+      <th class="num">Rating</th>
+      <th>Tags</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+      <tr{% if item.id in incomplete_ids %} class="incomplete"{% endif %}>
+        <td>{{ item.ref_number or "—" }}</td>
+        <td>{{ item.title }}</td>
+        <td>{{ item.author or "—" }}</td>
+        <td>{{ item.discipline or "—" }}</td>
+        <td class="num">{{ item.rating or "—" }}</td>
+        <td>
+          {% for t in item.tags %}
+            <span class="tag">{{ t }}</span>
+          {% endfor %}
+        </td>
+        <td><a href="/library/items/{{ item.id }}/edit">Edit</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p><a href="/library">&larr; Library</a></p>
+{% endblock %}

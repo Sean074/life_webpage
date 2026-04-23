@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}New Post — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="blog-new">
+  <p class="meta"><a href="/blog">&larr; Blog</a></p>
+  <h1>New post</h1>
+
+  {% if errors.csrf %}
+    <p class="error">{{ errors.csrf }}</p>
+  {% endif %}
+
+  <form method="post" action="/blog/new">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="form-row">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" value="{{ values.title if values else '' }}" required>
+      {% if errors.title %}<p class="field-error">{{ errors.title }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <label for="slug">Slug <span class="meta">(URL path, lowercase letters/numbers/hyphens)</span></label>
+      <input type="text" id="slug" name="slug" value="{{ values.slug if values else '' }}" required>
+      {% if errors.slug %}<p class="field-error">{{ errors.slug }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <label for="date_str">Date</label>
+      <input type="date" id="date_str" name="date_str" value="{{ values.date if values else '' }}">
+    </div>
+
+    <div class="form-row">
+      <label for="tags">Tags <span class="meta">(comma-separated)</span></label>
+      <input type="text" id="tags" name="tags" value="{{ values.tags if values else '' }}" placeholder="python, web, tools">
+    </div>
+
+    <div class="form-row">
+      <label for="body">Body <span class="meta">(Markdown)</span></label>
+      <textarea id="body" name="body" rows="20">{{ values.body if values else '' }}</textarea>
+      {% if errors.body %}<p class="field-error">{{ errors.body }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <button type="submit" class="btn btn-primary">Publish post</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

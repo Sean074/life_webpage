@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Search — Library{% endblock %}
+{% block content %}
+<h1>Search</h1>
+
+<form method="get" action="/library/search">
+  <div class="form-row">
+    <label for="q">Keyword</label>
+    <input type="text" id="q" name="q" value="{{ q }}">
+  </div>
+
+  <div class="form-row">
+    <label for="discipline">Discipline</label>
+    <select id="discipline" name="discipline">
+      <option value="">All</option>
+      {% for d in disciplines %}
+        <option value="{{ d }}"{% if discipline == d %} selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="tag">Tag</label>
+    <select id="tag" name="tag">
+      <option value="">All</option>
+      {% for t in tags %}
+        <option value="{{ t }}"{% if tag == t %} selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="rating">Rating</label>
+    <select id="rating" name="rating">
+      <option value="">Any</option>
+      {% for r in [1,2,3,4,5] %}
+        <option value="{{ r }}"{% if rating == r|string %} selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Search</button>
+  <a href="/library/search" class="btn">Clear</a>
+</form>
+
+<hr>
+
+{% if items %}
+  <table>
+    <thead>
+      <tr>
+        <th>Ref</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Discipline</th>
+        <th>Rating</th>
+        <th>Tags</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.ref_number or "—" }}</td>
+          <td><a href="/library/items/{{ item.id }}/edit">{{ item.title }}</a></td>
+          <td>{{ item.author or "—" }}</td>
+          <td>{{ item.discipline or "—" }}</td>
+          <td class="num">{{ item.rating or "—" }}</td>
+          <td>
+            {% for t in item.tags %}
+              <span class="tag">{{ t }}</span>
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No results.</p>
+{% endif %}
+
+<p><a href="/library">&larr; Library</a></p>
+{% endblock %}

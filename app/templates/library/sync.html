@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Sync — Library{% endblock %}
+{% block content %}
+<h1>Sync</h1>
+
+{% if untracked %}
+  <p>{{ untracked|length }} file(s) found in the library folder not yet in the database:</p>
+
+  <table>
+    <thead>
+      <tr><th>File</th></tr>
+    </thead>
+    <tbody>
+      {% for path in untracked %}
+        <tr><td>{{ path }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <form method="post" action="/library/sync">
+    <button type="submit" class="btn btn-primary">Add {{ untracked|length }} item(s) to database</button>
+  </form>
+{% else %}
+  <p>All files are tracked.</p>
+{% endif %}
+
+<p><a href="/library">&larr; Library</a></p>
+{% endblock %}

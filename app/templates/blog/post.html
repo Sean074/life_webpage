@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{% if post %}{{ post.title }} — Sean O'Meara{% else %}Post not found{% endif %}{% endblock %}
+
+{% block content %}
+{% if not post %}
+  <h1>Post not found.</h1>
+  <p><a href="/blog">&larr; Back to blog</a></p>
+{% else %}
+  <article class="post">
+    <header class="post-header">
+      <p class="meta"><a href="/blog">&larr; Blog</a></p>
+      <h1>{{ post.title }}</h1>
+      <p class="post-meta meta">
+        {{ post.date }}
+        {% if post.tags %}
+          &middot;
+          {% for tag in post.tags %}
+            <span class="tag">{{ tag }}</span>{% if not loop.last %} {% endif %}
+          {% endfor %}
+        {% endif %}
+      </p>
+    </header>
+    <div class="post-body">
+      {{ post.body | safe }}
+    </div>
+  </article>
+{% endif %}
+{% endblock %}

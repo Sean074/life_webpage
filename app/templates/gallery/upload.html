@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Upload — Gallery — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="gallery-upload">
+  <div class="gallery-header">
+    <h1>Upload image</h1>
+    <a href="/gallery" class="btn">Cancel</a>
+  </div>
+
+  {% if errors.csrf %}
+    <p class="error">! {{ errors.csrf }}</p>
+  {% endif %}
+
+  <form method="post" action="/gallery/upload" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="form-row">
+      <label for="file">File</label>
+      <input type="file" id="file" name="file" accept="image/*" required>
+      {% if errors.file %}<p class="field-error">! {{ errors.file }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <label for="category">Category</label>
+      <select id="category" name="category" required>
+        <option value="">— select —</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}"
+            {% if values and values.category == cat %}selected{% endif %}
+          >{{ cat }}</option>
+        {% endfor %}
+      </select>
+      {% if errors.category %}<p class="field-error">! {{ errors.category }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <label for="title">Title <span class="meta">(optional)</span></label>
+      <input type="text" id="title" name="title"
+             value="{{ values.title if values else '' }}"
+             placeholder="Leave blank to use filename">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Sean O'Meara{% endblock %}
+
+{% block content %}
+<h1>Sean O'Meara</h1>
+<p style="margin-top: 1.5rem; color: var(--muted);">Personal portal. Writing, images, and private records.</p>
+
+<hr>
+
+{% if recent_posts %}
+<section>
+  <h2>Recent Posts</h2>
+  <ul class="section-list">
+    {% for post in recent_posts %}
+    <li>
+      <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
+      <span class="section-desc"> &mdash; <span class="meta">{{ post.date }}</span></span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+<hr>
+{% endif %}
+
+<ul class="section-list">
+  <li>
+    <a href="/blog">Blog</a>
+    <span class="section-desc"> &mdash; Writing, notes, and essays.</span>
+  </li>
+  <li>
+    <a href="/gallery">Gallery</a>
+    <span class="section-desc"> &mdash; Images and art.</span>
+  </li>
+</ul>
+
+{% if user %}
+  <ul class="section-list">
+    <li>
+      <a href="/library">Library</a>
+      <span class="section-desc"> &mdash; Documents and references.</span>
+    </li>
+    <li>
+      <a href="/expenses">Expenses</a>
+      <span class="section-desc"> &mdash; Transaction log and budgets.</span>
+    </li>
+    <li>
+      <a href="/wealth">Wealth</a>
+      <span class="section-desc"> &mdash; Net worth and accounts.</span>
+    </li>
+    <li>
+      <a href="/health">Health</a>
+      <span class="section-desc"> &mdash; Metrics and logs.</span>
+    </li>
+  </ul>
+{% else %}
+  <p style="margin-top: 1.5rem; font-size: 0.875rem; color: var(--muted);">
+    <a href="/login">Login</a> to access private sections.
+  </p>
+{% endif %}
+{% endblock %}

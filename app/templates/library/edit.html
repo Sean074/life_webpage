@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Edit — {{ item.title }}{% endblock %}
+{% block content %}
+<h1>Edit item</h1>
+<p><small>{{ item.file_path or "" }}</small></p>
+
+<form method="post" action="/library/items/{{ item.id }}/edit">
+  <input type="hidden" name="csrf_token" value="">
+
+  <div class="form-row">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ item.title }}" required>
+  </div>
+
+  <div class="form-row">
+    <label for="ref_number">Reference number</label>
+    <input type="text" id="ref_number" name="ref_number" value="{{ item.ref_number or '' }}">
+  </div>
+
+  <div class="form-row">
+    <label for="author">Author</label>
+    <input type="text" id="author" name="author" value="{{ item.author or '' }}">
+  </div>
+
+  <div class="form-row">
+    <label for="discipline">Discipline</label>
+    <input type="text" id="discipline" name="discipline" value="{{ item.discipline or '' }}" list="discipline-list">
+    <datalist id="discipline-list">
+      {% for d in disciplines %}
+        <option value="{{ d }}">
+      {% endfor %}
+    </datalist>
+  </div>
+
+  <div class="form-row">
+    <label for="rating">Rating</label>
+    <select id="rating" name="rating">
+      <option value="">— unrated —</option>
+      {% for r in [1,2,3,4,5] %}
+        <option value="{{ r }}"{% if item.rating == r %} selected{% endif %}>{{ r }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="tags">Tags <small>(comma-separated)</small></label>
+    <input type="text" id="tags" name="tags" value="{{ item.tags | join(', ') }}">
+  </div>
+
+  <div class="form-row">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="4">{{ item.description or '' }}</textarea>
+  </div>
+
+  <div class="form-row">
+    <label for="comment">Comment</label>
+    <textarea id="comment" name="comment" rows="3">{{ item.comment or '' }}</textarea>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a href="/library/review" class="btn">Cancel</a>
+</form>
+{% endblock %}

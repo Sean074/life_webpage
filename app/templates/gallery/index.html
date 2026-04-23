@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Gallery — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="gallery-page">
+  <div class="gallery-header">
+    <h1>Gallery</h1>
+  </div>
+
+  <div class="gallery-filters">
+    <a href="/gallery" class="{% if not cat_filter %}active{% endif %}">All</a>
+    {% for cat in categories %}
+      <a href="/gallery?category={{ cat }}" class="{% if cat_filter == cat %}active{% endif %}">{{ cat }}</a>
+    {% endfor %}
+  </div>
+
+  {% if images %}
+    <div class="gallery-grid">
+      {% for img in images %}
+        <div class="gallery-item">
+          <a href="{{ img.url }}" target="_blank" rel="noopener">
+            <img
+              src="{{ img.thumb }}"
+              loading="lazy"
+              title="{{ img.title or img.filename }}"
+              alt="{{ img.title or img.filename }}"
+            >
+          </a>
+          {% if user and user.role == 'admin' %}
+            <div class="gallery-controls">
+              <form method="post" action="/gallery/{{ img.id }}/rotate">
+                <input type="hidden" name="csrf_token" class="gallery-csrf">
+                <input type="hidden" name="direction" value="ccw">
+                <button type="submit" class="gallery-ctrl-btn" title="Rotate left">&#8630;</button>
+              </form>
+              <form method="post" action="/gallery/{{ img.id }}/rotate">
+                <input type="hidden" name="csrf_token" class="gallery-csrf">
+                <input type="hidden" name="direction" value="cw">
+                <button type="submit" class="gallery-ctrl-btn" title="Rotate right">&#8631;</button>
+              </form>
+              <form method="post" action="/gallery/{{ img.id }}/delete"
+                    onsubmit="return confirm('Delete this image?')">
+                <input type="hidden" name="csrf_token" class="gallery-csrf">
+                <button type="submit" class="gallery-ctrl-btn gallery-delete-btn" title="Delete">&#x2715;</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="meta">No images yet.</p>
+  {% endif %}
+</div>
+
+{% if user and user.role == 'admin' %}
+<script>
+  (function () {
+    var token = document.cookie.split(';').map(function(c) {
+      return c.trim();
+    }).filter(function(c) {
+      return c.startsWith('csrf_token=');
+    }).map(function(c) {
+      return c.slice('csrf_token='.length);
+    })[0] || '';
+    document.querySelectorAll('.gallery-csrf').forEach(function(el) {
+      el.value = token;
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

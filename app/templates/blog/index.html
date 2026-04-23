@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Blog — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="blog-index">
+  <div class="blog-header">
+    <h1>Blog</h1>
+    {% if user and user.role == 'admin' %}
+      <a href="/blog/new" class="btn btn-primary">New post</a>
+    {% elif user %}
+      <a href="/blog/new" class="btn">Write a post</a>
+    {% endif %}
+  </div>
+
+  <form class="blog-search" action="/blog" method="get">
+    <label for="q">Search posts</label>
+    <div class="search-row">
+      <input type="text" id="q" name="q" value="{{ query or '' }}" placeholder="title, tag, or keyword">
+      <button type="submit" class="btn">Search</button>
+    </div>
+    {% if query is not none %}
+      <a href="/blog" class="clear-search">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if query %}
+    <p class="meta search-summary">
+      {% if posts %}
+        {{ posts | length }} result{% if posts | length != 1 %}s{% endif %} for &ldquo;{{ query }}&rdquo;
+      {% else %}
+        No results for &ldquo;{{ query }}&rdquo;.
+      {% endif %}
+    </p>
+  {% elif query == "" %}
+    <p class="meta">All posts ({{ posts | length }})</p>
+  {% else %}
+    <p class="meta">Recent posts</p>
+  {% endif %}
+
+  {% if posts %}
+    <ul class="post-list">
+      {% for post in posts %}
+        <li class="post-item">
+          <div class="post-meta meta">{{ post.date }}{% if post.tags %} &middot; {% for tag in post.tags %}<span class="tag">{{ tag }}</span>{% if not loop.last %} {% endif %}{% endfor %}{% endif %}</div>
+          <h2><a href="/blog/{{ post.slug }}">{{ post.title }}</a></h2>
+          <p class="post-excerpt">{{ post.excerpt }}</p>
+          <a href="/blog/{{ post.slug }}" class="read-more">Read &rarr;</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="meta">No posts yet.</p>
+  {% endif %}
+
+  {% if query is none %}
+    <hr>
+    <p class="meta"><a href="/blog?q=">Browse all posts &rarr;</a></p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Sean O'Meara{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-brand" href="/">Sean O'Meara</a>
+    <div class="nav-links">
+      <a href="/blog"{% if active == 'blog' %} class="active"{% endif %}>Blog</a>
+      <a href="/gallery"{% if active == 'gallery' %} class="active"{% endif %}>Gallery</a>
+      {% if user %}
+        {% if user.role == 'admin' %}
+          <a href="/gallery/upload"{% if active == 'gallery_upload' %} class="active"{% endif %}>Upload</a>
+        {% endif %}
+        <a href="/library"{% if active == 'library' %} class="active"{% endif %}>Library</a>
+        <a href="/expenses"{% if active == 'expenses' %} class="active"{% endif %}>Expenses</a>
+        <a href="/wealth"{% if active == 'wealth' %} class="active"{% endif %}>Wealth</a>
+        <a href="/health"{% if active == 'health' %} class="active"{% endif %}>Health</a>
+        <a href="/logout">Logout</a>
+      {% else %}
+        <a href="/login"{% if active == 'login' %} class="active"{% endif %}>Login</a>
+      {% endif %}
+    </div>
+  </nav>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  {% set quote = random_quote() %}
+  <footer class="quote-footer">
+    <blockquote>
+      <p>&#8220;{{ quote.quote }}&#8221;</p>
+      <cite>&#8212; {{ quote.author }}{% if quote.source %}, <em>{{ quote.source }}</em>{% endif %}</cite>
+    </blockquote>
+  </footer>
+</body>
+</html>
