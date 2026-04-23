@@ -68,6 +68,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
   - "eating out" transactions related to eating out, restraunts, coffee
   - "other"
 - Charts: bar/line, monochrome — spending by category and over time
+- the monthly totals chart shall show the total as default and provide a drop down to enable the plot to show each category.
 - CSV bulk import with per-bank parser
 - Admin only: import CSV, edit/delete transactions, manage categories
 

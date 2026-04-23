@@ -37,6 +37,7 @@ async def expenses_index(request: Request, user: dict = Depends(require_auth)):
         "summary": expenses_model.get_summary(),
         "month_labels": [_month_label(i) for i in range(3)],
         "monthly": expenses_model.get_monthly_totals(),
+        "monthly_by_cat": expenses_model.get_monthly_by_category(),
         "cat_totals": expenses_model.get_category_totals(),
         "bank_options": list(expenses_svc.PARSERS.keys()),
     })

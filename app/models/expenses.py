@@ -132,6 +132,24 @@ def get_category_totals() -> list[dict]:
         conn.close()
 
 
+def get_monthly_by_category() -> list[dict]:
+    conn = _connect()
+    try:
+        rows = conn.execute("""
+            SELECT
+                strftime('%Y-%m', date) AS month,
+                category,
+                SUM(amount)             AS total
+            FROM transactions
+            WHERE type = 'debit'
+            GROUP BY month, category
+            ORDER BY month, category
+        """).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
 def get_summary() -> dict:
     conn = _connect()
     try:
