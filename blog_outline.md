@@ -54,8 +54,19 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 
 ### Expenses — `/expenses` (restricted — any logged-in user)
 - Summary totals at top; detailed transaction table below
-- Transaction schema: `date`, `amount`, `description`, `category`, `account`, `type` (debit/credit)
+- tracks spending (debit) only. Income (credit) is not tracked.
+- Transaction schema: `date`, `amount`, `description`, `category`, `account`, `type` (debit)
+- top level metric SHALL:
+  - show the average per day spending (based on 6 month running average)
+  - add a average spending for th past 30 days.
+  - show total spending per month for the current month and the last 2.
 - Categories are user-defined in DB
+  - "home" transaction relate to place to live, HOA, rent, wifi, furniture
+  - "entertainment" transactions related to entertainment, Netflix, movies, 
+  - "shopping" transactions related to cloths, toys
+  - "hobbies" transactions related to hobbies, art, climbing (REI), running
+  - "eating out" transactions related to eating out, restraunts, coffee
+  - "other"
 - Charts: bar/line, monochrome — spending by category and over time
 - CSV bulk import with per-bank parser
 - Admin only: import CSV, edit/delete transactions, manage categories
