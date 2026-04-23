@@ -30,4 +30,5 @@ async def index(request: Request):
         "user": get_current_user(request),
         "active": "home",
         "recent_posts": get_recent_posts(3),
+        "show_margin_gallery": True,
     })

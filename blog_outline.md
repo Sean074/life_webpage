@@ -10,7 +10,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 - Brief intro (name, one-line bio)
 - Links to the main public sections: Blog, Gallery
 - No hero image, no animation — plain text
-- in the left margin include thumbnail of three images from the gallery.  these should change with page reload.
+- in the left margin include thumbnail of three images from the gallery.  these should change with page reload. These shall ONLY be on the landing page.
 
 ---
 
@@ -63,7 +63,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 ---
 
 ### Wealth — `/wealth` (restricted — any logged-in user)
-- Page MUST display the cart before the table.
+- Page MUST display the chart before the table.
 - The table shall be hidden unless the user selects to expand the table.
 - Net worth = assets − liabilities, shown at top
 - Account list: `balance`, `type`, `institution`, `last_updated`
@@ -76,12 +76,22 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
   - Outputs per projected year: annual income, annual spending, annual investment growth, total net wealth
   - Displayed as a line chart to a user-defined horizon
 - Admin only: add/update accounts, adjust projection parameters
+  - update the value in a given account, use a fom require all accounts to be updated
+   - use prior value as default
+   - date should default to current date
+  - wealth plot will update with new data.
 
 ---
 
 ### Health — `/health` (restricted — any logged-in user)
 - Summary metrics at top; detail records below
-- Charts: line graphs for tracked metrics over time
+- Health categories to be tracked, daily record
+  - Cook 1, 2, or 3 meals
+  - Exercise, hours exercised
+  - Drink,  number of standard
+  - Art, hours
+  - Read, hours
+- Charts: line graphs (average daily calculated over a week) for tracked metrics over time
 - Admin only: add new records
 
 ---

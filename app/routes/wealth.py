@@ -54,6 +54,32 @@ async def wealth_index(request: Request, user: dict = Depends(require_auth)):
     return response
 
 
+@router.post("/accounts/bulk-update")
+async def bulk_update_accounts(
+    request: Request,
+    user: dict = Depends(require_admin),
+):
+    cookie_token = request.cookies.get("csrf_token", "")
+    form = await request.form()
+    form_token = form.get("csrf_token", "")
+    if not secrets.compare_digest(form_token, cookie_token):
+        return HTMLResponse("Invalid CSRF token", status_code=400)
+
+    last_updated = form.get("last_updated", date.today().isoformat())
+    accounts = wealth_model.get_accounts()
+    for acct in accounts:
+        raw = form.get(f"balance_{acct['id']}")
+        if raw is not None:
+            try:
+                wealth_model.upsert_account(
+                    acct["name"], float(raw), acct["type"],
+                    acct["institution"], last_updated, account_id=acct["id"],
+                )
+            except ValueError:
+                pass
+    return RedirectResponse("/wealth", status_code=303)
+
+
 @router.post("/accounts")
 async def add_account(
     request: Request,

@@ -10,6 +10,40 @@
     Net worth: <strong>{{ "${:,.0f}".format(net_worth) }}</strong>
   </p>
 
+  {% if user.role == 'admin' %}
+  <details class="admin-panel">
+    <summary>Update balances</summary>
+    <form method="post" action="/wealth/accounts/bulk-update" class="bulk-update-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <table>
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Type</th>
+            <th class="numeric">Balance ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for acct in accounts %}
+          <tr>
+            <td>{{ acct.name }}</td>
+            <td>{{ acct.type }}</td>
+            <td class="numeric">
+              <input type="number" name="balance_{{ acct.id }}" value="{{ acct.balance }}" step="0.01" required>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="form-row">
+        <label>As of</label>
+        <input type="date" name="last_updated" value="{{ today }}" required>
+      </div>
+      <button type="submit" class="btn btn-primary">save all</button>
+    </form>
+  </details>
+  {% endif %}
+
   <!-- ── Historical chart ─────────────────────────────── -->
   <h2>Net worth over time</h2>
   <canvas id="history-chart" height="80"></canvas>
@@ -58,7 +92,7 @@
                 {% endfor %}
               </select>
               <input type="text" name="institution" value="{{ acct.institution }}" placeholder="Institution">
-              <input type="date" name="last_updated" value="{{ acct.last_updated }}" required>
+              <input type="date" name="last_updated" value="{{ today }}" required>
               <button type="submit" class="btn btn-sm btn-primary">save</button>
               <button type="button" class="btn btn-sm" onclick="toggleEdit('edit-{{ acct.id }}')">cancel</button>
             </form>

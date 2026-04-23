@@ -26,6 +26,7 @@
       {% endif %}
     </div>
   </nav>
+  {% if show_margin_gallery %}
   {% set margin_thumbs = random_gallery_thumbs() %}
   {% if margin_thumbs %}
   <aside class="margin-gallery">
@@ -33,6 +34,7 @@
     <a href="/gallery"><img src="{{ img.thumb }}" alt="{{ img.title or 'Gallery image' }}" loading="lazy"></a>
     {% endfor %}
   </aside>
+  {% endif %}
   {% endif %}
   <main class="{% block main_class %}container{% endblock %}">
     {% block content %}{% endblock %}
