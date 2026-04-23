@@ -10,6 +10,7 @@ from app.routes.blog import router as blog_router
 from app.routes.gallery import router as gallery_router
 from app.routes.library import router as library_router
 from app.routes.wealth import router as wealth_router
+from app.routes.health import router as health_router
 from app.services.blog import get_recent_posts
 from app.templates_config import templates
 
@@ -21,6 +22,7 @@ app.include_router(blog_router)
 app.include_router(gallery_router)
 app.include_router(library_router)
 app.include_router(wealth_router)
+app.include_router(health_router)
 
 
 @app.get("/")

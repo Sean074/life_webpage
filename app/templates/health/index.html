@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Health — Sean O'Meara{% endblock %}
+{% block main_class %}container-wide{% endblock %}
+
+{% block content %}
+
+  <h1>Health</h1>
+
+  <!-- ── 7-day summary ───────────────────────────────── -->
+  {% if summary %}
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th class="numeric">7-day avg</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Meals cooked / day</td><td class="numeric">{{ "%.1f"|format(summary.avg_meals or 0) }}</td></tr>
+      <tr><td>Exercise (hrs / day)</td><td class="numeric">{{ "%.1f"|format(summary.avg_exercise or 0) }}</td></tr>
+      <tr><td>Drinks / day</td><td class="numeric">{{ "%.1f"|format(summary.avg_drinks or 0) }}</td></tr>
+      <tr><td>Art (hrs / day)</td><td class="numeric">{{ "%.1f"|format(summary.avg_art or 0) }}</td></tr>
+      <tr><td>Reading (hrs / day)</td><td class="numeric">{{ "%.1f"|format(summary.avg_read or 0) }}</td></tr>
+      <tr><td>TV (hrs / day)</td><td class="numeric">{{ "%.1f"|format(summary.avg_tv or 0) }}</td></tr>
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if user.role == 'admin' %}
+  <details class="admin-panel">
+    <summary>Log a day</summary>
+    <form method="post" action="/health/records" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-row">
+        <label>Date</label>
+        <input type="date" name="record_date" value="{{ today }}" required>
+      </div>
+      <div class="form-row">
+        <label>Meals cooked</label>
+        <select name="meals_cooked" required>
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Exercise (hours)</label>
+        <input type="number" name="exercise_hours" value="0" step="0.25" min="0" required>
+      </div>
+      <div class="form-row">
+        <label>Drinks (standard)</label>
+        <input type="number" name="drinks" value="0" step="1" min="0" required>
+      </div>
+      <div class="form-row">
+        <label>Art (hours)</label>
+        <input type="number" name="art_hours" value="0" step="0.25" min="0" required>
+      </div>
+      <div class="form-row">
+        <label>Reading (hours)</label>
+        <input type="number" name="read_hours" value="0" step="0.25" min="0" required>
+      </div>
+      <div class="form-row">
+        <label>TV (hours)</label>
+        <input type="number" name="tv_hours" value="0" step="0.25" min="0" required>
+      </div>
+      <button type="submit" class="btn btn-primary">save</button>
+    </form>
+  </details>
+  {% endif %}
+
+  <!-- ── Charts ──────────────────────────────────────── -->
+  {% if weekly %}
+
+  <h2>Meals cooked</h2>
+  <canvas id="chart-meals" height="80"></canvas>
+
+  <h2>Exercise (hrs)</h2>
+  <canvas id="chart-exercise" height="80"></canvas>
+
+  <h2>Drinks</h2>
+  <canvas id="chart-drinks" height="80"></canvas>
+
+  <h2>Art (hrs)</h2>
+  <canvas id="chart-art" height="80"></canvas>
+
+  <h2>Reading (hrs)</h2>
+  <canvas id="chart-read" height="80"></canvas>
+
+  <h2>TV (hrs)</h2>
+  <canvas id="chart-tv" height="80"></canvas>
+
+  {% endif %}
+
+  <!-- ── Detail records ──────────────────────────────── -->
+  <details class="projection-detail">
+    <summary>Show all records</summary>
+    {% if records %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="numeric">Meals</th>
+          <th class="numeric">Exercise (h)</th>
+          <th class="numeric">Drinks</th>
+          <th class="numeric">Art (h)</th>
+          <th class="numeric">Read (h)</th>
+          <th class="numeric">TV (h)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td class="numeric">{{ r.meals_cooked }}</td>
+          <td class="numeric">{{ "%.2f"|format(r.exercise_hours) }}</td>
+          <td class="numeric">{{ r.drinks }}</td>
+          <td class="numeric">{{ "%.2f"|format(r.art_hours) }}</td>
+          <td class="numeric">{{ "%.2f"|format(r.read_hours) }}</td>
+          <td class="numeric">{{ "%.2f"|format(r.tv_hours) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No records yet.</p>
+    {% endif %}
+  </details>
+
+{% if weekly %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const style  = getComputedStyle(document.documentElement);
+  const accent = style.getPropertyValue('--accent').trim() || '#1a1aff';
+  const border = style.getPropertyValue('--border').trim() || '#c0c0c0';
+
+  const labels   = {{ weekly | map(attribute='week_start') | list | tojson }};
+  const meals    = {{ weekly | map(attribute='avg_meals')    | list | tojson }};
+  const exercise = {{ weekly | map(attribute='avg_exercise') | list | tojson }};
+  const drinks   = {{ weekly | map(attribute='avg_drinks')   | list | tojson }};
+  const art      = {{ weekly | map(attribute='avg_art')      | list | tojson }};
+  const read     = {{ weekly | map(attribute='avg_read')     | list | tojson }};
+  const tv       = {{ weekly | map(attribute='avg_tv')       | list | tojson }};
+
+  function makeOpts(decimals) {
+    return {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { color: border, lineWidth: 0.5 },
+          ticks: { font: { family: 'IBM Plex Mono' }, maxTicksLimit: 12 },
+        },
+        y: {
+          min: 0,
+          grid: { color: border, lineWidth: 0.5 },
+          ticks: { font: { family: 'IBM Plex Mono' }, callback: v => v.toFixed(decimals) },
+        },
+      },
+    };
+  }
+
+  function makeLine(data) {
+    return {
+      data,
+      borderColor: accent,
+      borderWidth: 1.5,
+      pointRadius: 3,
+      pointBackgroundColor: accent,
+      tension: 0.1,
+      fill: false,
+    };
+  }
+
+  new Chart(document.getElementById('chart-meals'),    { type: 'line', data: { labels, datasets: [makeLine(meals)]    }, options: makeOpts(1) });
+  new Chart(document.getElementById('chart-exercise'), { type: 'line', data: { labels, datasets: [makeLine(exercise)] }, options: makeOpts(1) });
+  new Chart(document.getElementById('chart-drinks'),   { type: 'line', data: { labels, datasets: [makeLine(drinks)]   }, options: makeOpts(1) });
+  new Chart(document.getElementById('chart-art'),      { type: 'line', data: { labels, datasets: [makeLine(art)]      }, options: makeOpts(1) });
+  new Chart(document.getElementById('chart-read'),     { type: 'line', data: { labels, datasets: [makeLine(read)]     }, options: makeOpts(1) });
+  new Chart(document.getElementById('chart-tv'),      { type: 'line', data: { labels, datasets: [makeLine(tv)]       }, options: makeOpts(1) });
+})();
+</script>
+{% endif %}
+
+{% endblock %}

@@ -91,6 +91,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
   - Drink,  number of standard
   - Art, hours
   - Read, hours
+  - TV, hours
 - Charts: line graphs (average daily calculated over a week) for tracked metrics over time
 - Admin only: add new records
 
