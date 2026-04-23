@@ -537,3 +537,99 @@ td.num {
   margin-top: 0.5rem;
   font-style: normal;
 }
+
+/* Wide container for dashboard pages */
+.container-wide {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Wealth page */
+.net-worth-headline {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.net-worth-headline .muted {
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.admin-panel {
+  margin: 1rem 0 1.5rem;
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+.admin-panel summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.projection-detail {
+  margin-bottom: 1.5rem;
+}
+
+.projection-detail > summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  align-items: center;
+}
+
+.inline-form input,
+.inline-form select {
+  font-family: inherit;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+}
+
+.projection-form .form-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.projection-form .form-row label {
+  width: 220px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.projection-form .form-row input {
+  font-family: inherit;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  width: 120px;
+}
+
+.projection-table {
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+tr.retirement-row td {
+  border-top: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+canvas {
+  margin-bottom: 2rem;
+}

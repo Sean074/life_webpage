@@ -26,7 +26,7 @@
       {% endif %}
     </div>
   </nav>
-  <main class="container">
+  <main class="{% block main_class %}container{% endblock %}">
     {% block content %}{% endblock %}
   </main>
   {% set quote = random_quote() %}

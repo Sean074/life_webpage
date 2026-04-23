@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Wealth — Sean O'Meara{% endblock %}
+{% block main_class %}container-wide{% endblock %}
+
+{% block content %}
+
+  <h1>Wealth</h1>
+
+  <p class="net-worth-headline">
+    Net worth: <strong>{{ "${:,.0f}".format(net_worth) }}</strong>
+  </p>
+
+  <!-- ── Historical chart ─────────────────────────────── -->
+  <h2>Net worth over time</h2>
+  <canvas id="history-chart" height="80"></canvas>
+
+  <details class="projection-detail">
+    <summary>Show accounts</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Institution</th>
+          <th class="numeric">Balance</th>
+          <th>Updated</th>
+          {% if user.role == 'admin' %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for acct in accounts %}
+        <tr>
+          <td>{{ acct.name }}</td>
+          <td>{{ acct.type }}</td>
+          <td>{{ acct.institution or "—" }}</td>
+          <td class="numeric">{{ "${:,.0f}".format(acct.balance) }}</td>
+          <td>{{ acct.last_updated }}</td>
+          {% if user.role == 'admin' %}
+          <td>
+            <button class="btn btn-sm" onclick="toggleEdit('edit-{{ acct.id }}')">edit</button>
+            <form method="post" action="/wealth/accounts/{{ acct.id }}/delete" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ acct.name }}?')">del</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% if user.role == 'admin' %}
+        <tr id="edit-{{ acct.id }}" style="display:none">
+          <td colspan="6">
+            <form method="post" action="/wealth/accounts/{{ acct.id }}/edit" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="text"   name="name"         value="{{ acct.name }}"    required placeholder="Name">
+              <input type="number" name="balance"       value="{{ acct.balance }}" required step="0.01" placeholder="Balance">
+              <select name="type">
+                {% for t in account_types %}
+                <option value="{{ t }}"{% if t == acct.type %} selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name="institution" value="{{ acct.institution }}" placeholder="Institution">
+              <input type="date" name="last_updated" value="{{ acct.last_updated }}" required>
+              <button type="submit" class="btn btn-sm btn-primary">save</button>
+              <button type="button" class="btn btn-sm" onclick="toggleEdit('edit-{{ acct.id }}')">cancel</button>
+            </form>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if user.role == 'admin' %}
+    <details class="admin-panel">
+      <summary>Add account</summary>
+      <form method="post" action="/wealth/accounts" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="text"   name="name"     required placeholder="Name">
+        <input type="number" name="balance"  required step="0.01" placeholder="Balance">
+        <select name="type">
+          {% for t in account_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+        <input type="text" name="institution" placeholder="Institution">
+        <input type="date" name="last_updated" value="{{ today }}" required>
+        <button type="submit" class="btn btn-sm btn-primary">add</button>
+      </form>
+    </details>
+    {% endif %}
+  </details>
+
+  <!-- ── Projection ───────────────────────────────────── -->
+  <h2>Projection</h2>
+
+  {% if user.role == 'admin' %}
+  <details class="admin-panel">
+    <summary>Edit assumptions</summary>
+    <form method="post" action="/wealth/projection" class="projection-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-row">
+        <label>Annual salary ($)</label>
+        <input type="number" name="annual_salary" value="{{ params.annual_salary }}" step="1000" required>
+      </div>
+      <div class="form-row">
+        <label>Annual spending ($)</label>
+        <input type="number" name="annual_spending" value="{{ params.annual_spending }}" step="1000" required>
+      </div>
+      <div class="form-row">
+        <label>Salary growth rate</label>
+        <input type="number" name="salary_growth_rate" value="{{ params.salary_growth_rate }}" step="0.001" required>
+      </div>
+      <div class="form-row">
+        <label>Inflation rate</label>
+        <input type="number" name="inflation_rate" value="{{ params.inflation_rate }}" step="0.001" required>
+      </div>
+      <div class="form-row">
+        <label>Investment return rate</label>
+        <input type="number" name="investment_return_rate" value="{{ params.investment_return_rate }}" step="0.001" required>
+      </div>
+      <div class="form-row">
+        <label>Retirement year</label>
+        <input type="number" name="retirement_year" value="{{ params.retirement_year }}" min="2025" max="2080" required>
+      </div>
+      <div class="form-row">
+        <label>Retirement spending adj.</label>
+        <input type="number" name="retirement_spending_adj" value="{{ params.retirement_spending_adj }}" step="0.01" min="0" max="2" required>
+      </div>
+      <div class="form-row">
+        <label>Horizon year</label>
+        <input type="number" name="horizon_year" value="{{ params.horizon_year }}" min="2025" max="2100" required>
+      </div>
+      <button type="submit" class="btn btn-primary">save</button>
+    </form>
+  </details>
+  {% endif %}
+
+  <canvas id="projection-chart" height="80"></canvas>
+
+  <details class="projection-detail">
+    <summary>Show projection table</summary>
+    <table class="projection-table">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th class="numeric">Income</th>
+          <th class="numeric">Spending</th>
+          <th class="numeric">Inv. growth</th>
+          <th class="numeric">Net worth</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in projection %}
+        <tr{% if row.year == params.retirement_year %} class="retirement-row"{% endif %}>
+          <td>{{ row.year }}</td>
+          <td class="numeric">{{ "${:,.0f}".format(row.income) }}</td>
+          <td class="numeric">{{ "${:,.0f}".format(row.spending) }}</td>
+          <td class="numeric">{{ "${:,.0f}".format(row.investment_growth) }}</td>
+          <td class="numeric">{{ "${:,.0f}".format(row.net_worth) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const style  = getComputedStyle(document.documentElement);
+  const accent = style.getPropertyValue('--accent').trim() || '#1a1aff';
+  const border = style.getPropertyValue('--border').trim() || '#c0c0c0';
+
+  const baseOpts = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: border, lineWidth: 0.5 }, ticks: { font: { family: 'IBM Plex Mono' }, maxTicksLimit: 10 } },
+      y: { grid: { color: border, lineWidth: 0.5 }, ticks: { font: { family: 'IBM Plex Mono' }, callback: v => '$' + (v / 1e6).toFixed(1) + 'M' } },
+    },
+  };
+
+  const histLabels = {{ history    | map(attribute='date')      | list | tojson }};
+  const histData   = {{ history    | map(attribute='net_worth') | list | tojson }};
+  new Chart(document.getElementById('history-chart'), {
+    type: 'line',
+    data: { labels: histLabels, datasets: [{ data: histData, borderColor: accent, borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: accent, tension: 0.1, fill: false }] },
+    options: baseOpts,
+  });
+
+  const projLabels = {{ projection | map(attribute='year')      | list | tojson }};
+  const projData   = {{ projection | map(attribute='net_worth') | list | tojson }};
+  new Chart(document.getElementById('projection-chart'), {
+    type: 'line',
+    data: { labels: projLabels, datasets: [{ data: projData, borderColor: accent, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: accent, tension: 0.1, fill: false }] },
+    options: baseOpts,
+  });
+
+  function toggleEdit(id) {
+    const row = document.getElementById(id);
+    row.style.display = row.style.display === 'none' ? '' : 'none';
+  }
+  window.toggleEdit = toggleEdit;
+})();
+</script>
+{% endblock %}

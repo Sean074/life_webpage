@@ -1,0 +1,135 @@
+import secrets
+from datetime import date
+
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+
+from app.auth import require_admin, require_auth
+from app.models import wealth as wealth_model
+from app.services import wealth as wealth_svc
+from app.templates_config import templates
+
+seed = wealth_svc.latest_accounts_from_csv()
+wealth_model.init_db(seed_accounts=seed)
+
+router = APIRouter(prefix="/wealth")
+
+ACCOUNT_TYPES = ["savings", "investment", "retirement", "property", "liability"]
+
+
+def _csrf_pair(response):
+    token = secrets.token_hex(16)
+    response.set_cookie("csrf_token", token, httponly=False, samesite="lax")
+    return token
+
+
+def _check_csrf(request: Request):
+    form_token = request.cookies.get("csrf_token", "")
+    return form_token  # validated against form field in POST handlers
+
+
+@router.get("", response_class=HTMLResponse)
+async def wealth_index(request: Request, user: dict = Depends(require_auth)):
+    accounts = wealth_model.get_accounts()
+    params = wealth_model.get_projection_params()
+    history = wealth_svc.load_history()
+    net_worth = wealth_svc.current_net_worth(accounts)
+    projection = wealth_svc.run_projection(params, net_worth)
+
+    csrf_token = secrets.token_hex(16)
+    response = templates.TemplateResponse("wealth/index.html", {
+        "request": request,
+        "user": user,
+        "active": "wealth",
+        "accounts": accounts,
+        "params": params,
+        "history": history,
+        "net_worth": net_worth,
+        "projection": projection,
+        "account_types": ACCOUNT_TYPES,
+        "csrf_token": csrf_token,
+        "today": date.today().isoformat(),
+    })
+    response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="lax")
+    return response
+
+
+@router.post("/accounts")
+async def add_account(
+    request: Request,
+    user: dict = Depends(require_admin),
+    csrf_token: str = Form(...),
+    name: str = Form(...),
+    balance: float = Form(...),
+    type_: str = Form(..., alias="type"),
+    institution: str = Form(""),
+    last_updated: str = Form(...),
+):
+    cookie_token = request.cookies.get("csrf_token", "")
+    if not secrets.compare_digest(csrf_token, cookie_token):
+        return HTMLResponse("Invalid CSRF token", status_code=400)
+    wealth_model.upsert_account(name, balance, type_, institution, last_updated)
+    return RedirectResponse("/wealth", status_code=303)
+
+
+@router.post("/accounts/{account_id}/edit")
+async def edit_account(
+    request: Request,
+    account_id: int,
+    user: dict = Depends(require_admin),
+    csrf_token: str = Form(...),
+    name: str = Form(...),
+    balance: float = Form(...),
+    type_: str = Form(..., alias="type"),
+    institution: str = Form(""),
+    last_updated: str = Form(...),
+):
+    cookie_token = request.cookies.get("csrf_token", "")
+    if not secrets.compare_digest(csrf_token, cookie_token):
+        return HTMLResponse("Invalid CSRF token", status_code=400)
+    wealth_model.upsert_account(name, balance, type_, institution, last_updated, account_id=account_id)
+    return RedirectResponse("/wealth", status_code=303)
+
+
+@router.post("/accounts/{account_id}/delete")
+async def delete_account(
+    request: Request,
+    account_id: int,
+    user: dict = Depends(require_admin),
+    csrf_token: str = Form(...),
+):
+    cookie_token = request.cookies.get("csrf_token", "")
+    if not secrets.compare_digest(csrf_token, cookie_token):
+        return HTMLResponse("Invalid CSRF token", status_code=400)
+    wealth_model.delete_account(account_id)
+    return RedirectResponse("/wealth", status_code=303)
+
+
+@router.post("/projection")
+async def update_projection(
+    request: Request,
+    user: dict = Depends(require_admin),
+    csrf_token: str = Form(...),
+    annual_salary: float = Form(...),
+    annual_spending: float = Form(...),
+    salary_growth_rate: float = Form(...),
+    inflation_rate: float = Form(...),
+    investment_return_rate: float = Form(...),
+    retirement_year: int = Form(...),
+    retirement_spending_adj: float = Form(...),
+    horizon_year: int = Form(...),
+):
+    cookie_token = request.cookies.get("csrf_token", "")
+    if not secrets.compare_digest(csrf_token, cookie_token):
+        return HTMLResponse("Invalid CSRF token", status_code=400)
+    wealth_model.update_projection_params({
+        "annual_salary": annual_salary,
+        "annual_spending": annual_spending,
+        "salary_growth_rate": salary_growth_rate,
+        "inflation_rate": inflation_rate,
+        "investment_return_rate": investment_return_rate,
+        "retirement_year": retirement_year,
+        "retirement_spending_adj": retirement_spending_adj,
+        "horizon_year": horizon_year,
+    })
+    return RedirectResponse("/wealth", status_code=303)

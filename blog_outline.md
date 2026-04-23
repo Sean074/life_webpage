@@ -62,6 +62,8 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 ---
 
 ### Wealth — `/wealth` (restricted — any logged-in user)
+- Page MUST display the cart before the table.
+- The table shall be hidden unless the user selects to expand the table.
 - Net worth = assets − liabilities, shown at top
 - Account list: `balance`, `type`, `institution`, `last_updated`
 - Line chart of net worth over time (historical actuals)
