@@ -26,6 +26,33 @@ uvicorn app.main:app --reload
 
 To add a user: `python scripts/create_user.py --username <name> --role <admin|user>`
 
+## Deploying
+
+Hosted on a Hetzner CX22 VPS (Ubuntu 24.04) behind nginx. App runs as the `app` system user via a systemd service. Full steps in `docs/deploy.md`.
+
+**First deploy (one-time server setup):**
+```bash
+scp scripts/server_setup.sh root@<server-ip>:~/
+ssh root@<server-ip> "bash ~/server_setup.sh yourdomain.com"
+bash scripts/deploy.sh <server-ip>           # sync code and install deps
+ssh app@<server-ip> "nano /home/app/life/.env"  # set SECRET_KEY
+ssh root@<server-ip> "certbot --nginx -d yourdomain.com"
+rsync -avz data/ app@<server-ip>:/home/app/life/data/  # seed DBs and images
+ssh app@<server-ip> "cd /home/app/life && source .venv/bin/activate && python scripts/create_user.py --username <name> --role admin"
+```
+
+**Subsequent deploys:**
+```bash
+bash scripts/deploy.sh <server-ip>
+```
+
+**Common ops:**
+- Logs: `ssh root@<server-ip> journalctl -u life -f`
+- Restart: `ssh root@<server-ip> systemctl restart life`
+- Backup data: `rsync -avz app@<server-ip>:/home/app/life/data/ ./data-backup/`
+
+The `data/` directory (DBs, images) is never in git — sync it manually with rsync.
+
 ## Architecture
 
 ```
@@ -48,6 +75,8 @@ docs/
 migrations/           # Plain .sql files — no migration framework
 scripts/
   create_user.py      # CLI to add users to the DB
+  server_setup.sh     # One-time VPS provisioning (run as root)
+  deploy.sh           # Rsync + restart — run from local machine on every deploy
 ```
 
 ## Required Standards

@@ -4,6 +4,9 @@ from pathlib import Path
 DB_PATH = Path(__file__).parent.parent.parent / "data" / "library.db"
 
 
+_ITEM_COLS = {"title", "author", "ref_number", "discipline", "description", "comment", "rating", "file_path"}
+
+
 def _connect():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -76,6 +79,7 @@ def get_item(item_id: int):
 
 def create_item(data: dict) -> int:
     tags = data.pop("tags", [])
+    data = {k: v for k, v in data.items() if k in _ITEM_COLS}
     cols = ", ".join(data.keys())
     placeholders = ", ".join("?" * len(data))
     with _connect() as conn:
@@ -90,6 +94,7 @@ def create_item(data: dict) -> int:
 
 def update_item(item_id: int, data: dict):
     tags = data.pop("tags", None)
+    data = {k: v for k, v in data.items() if k in _ITEM_COLS}
     assignments = ", ".join(f"{k} = ?" for k in data)
     assignments += ", updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')"
     values = list(data.values()) + [item_id]

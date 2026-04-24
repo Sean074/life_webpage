@@ -114,7 +114,9 @@ async def import_csv(
         transactions = expenses_svc.parse_csv(bank, contents)
         expenses_svc.bulk_import(transactions)
     except Exception as exc:
-        return HTMLResponse(f"Import failed: {exc}", status_code=400)
+        import logging
+        logging.getLogger(__name__).error("CSV import error: %s", exc)
+        return HTMLResponse("Import failed: check file format.", status_code=400)
     return RedirectResponse("/expenses", status_code=303)
 
 

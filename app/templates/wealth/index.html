@@ -74,7 +74,7 @@
             <button class="btn btn-sm" onclick="toggleEdit('edit-{{ acct.id }}')">edit</button>
             <form method="post" action="/wealth/accounts/{{ acct.id }}/delete" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ acct.name }}?')">del</button>
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete ' + {{ acct.name | tojson }} + '?')">del</button>
             </form>
           </td>
           {% endif %}
@@ -194,7 +194,7 @@
     </table>
   </details>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="/static/js/chart.umd.min.js"></script>
 <script>
 (function () {
   const style  = getComputedStyle(document.documentElement);

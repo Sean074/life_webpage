@@ -15,6 +15,9 @@ SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 
 def _signer() -> TimestampSigner:
     secret = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+    if secret == "dev-secret-change-me":
+        import warnings
+        warnings.warn("SECRET_KEY is unset — sessions are insecure", stacklevel=2)
     return TimestampSigner(secret)
 
 
@@ -34,12 +37,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_session(response: Response, user_id: int) -> None:
     token = _signer().sign(str(user_id)).decode()
+    secure = os.environ.get("HTTPS_ONLY", "false").lower() == "true"
     response.set_cookie(
         COOKIE_NAME,
         token,
         max_age=SESSION_MAX_AGE,
         httponly=True,
         samesite="lax",
+        secure=secure,
     )
 
 

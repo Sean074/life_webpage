@@ -22,12 +22,23 @@ def _parse_frontmatter(raw: str) -> tuple:
     return fm, parts[2].strip()
 
 
+_ALLOWED_TAGS = {
+    "p", "br", "hr", "blockquote", "pre", "code",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li",
+    "strong", "em", "del", "a", "img",
+    "table", "thead", "tbody", "tr", "th", "td",
+}
+_ALLOWED_ATTRS = {"a": ["href", "title"], "img": ["src", "alt"]}
+
+
 def _render_markdown(text: str) -> str:
     try:
+        import bleach
         import markdown as md
-        return md.markdown(text, extensions=["fenced_code", "tables"])
+        html = md.markdown(text, extensions=["fenced_code", "tables"])
+        return bleach.clean(html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
     except ImportError:
-        # Fallback: wrap paragraphs in <p> tags
         paras = re.split(r"\n{2,}", text.strip())
         return "\n".join(f"<p>{p.replace(chr(10), ' ')}</p>" for p in paras)
 
@@ -83,6 +94,8 @@ def get_recent_posts(n: int = 3) -> list[dict]:
 
 
 def get_post(slug: str) -> Optional[dict]:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        return None
     path = os.path.join(POSTS_DIR, f"{slug}.md")
     return _load_post(path, render_body=True)
 
@@ -103,6 +116,8 @@ def search_posts(query: str) -> list[dict]:
 
 
 def create_post(slug: str, title: str, date: str, tags: str, body: str) -> None:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        raise ValueError(f"Invalid slug: {slug!r}")
     os.makedirs(POSTS_DIR, exist_ok=True)
     tags_clean = ", ".join(t.strip() for t in tags.split(",") if t.strip())
     content = f"---\ntitle: {title}\ndate: {date}\ntags: {tags_clean}\ndraft: false\n---\n\n{body}"

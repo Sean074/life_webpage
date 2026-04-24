@@ -69,7 +69,7 @@ async def login_post(
     password: str = Form(...),
     csrf_token: str = Form(...),
 ):
-    ip = request.client.host
+    ip = request.headers.get("X-Real-IP") or request.client.host
 
     cookie_csrf = request.cookies.get("csrf_token", "")
     if not secrets.compare_digest(csrf_token, cookie_csrf):
