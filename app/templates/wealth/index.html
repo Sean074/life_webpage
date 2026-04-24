@@ -212,10 +212,25 @@
 
   const histLabels = {{ history    | map(attribute='date')      | list | tojson }};
   const histData   = {{ history    | map(attribute='net_worth') | list | tojson }};
+  const histPoints = histLabels.map((d, i) => ({ x: new Date(d).getTime(), y: histData[i] }));
   new Chart(document.getElementById('history-chart'), {
-    type: 'line',
-    data: { labels: histLabels, datasets: [{ data: histData, borderColor: accent, borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: accent, tension: 0.1, fill: false }] },
-    options: baseOpts,
+    type: 'scatter',
+    data: { datasets: [{ data: histPoints, borderColor: accent, borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: accent, showLine: true, tension: 0.1, fill: false }] },
+    options: {
+      ...baseOpts,
+      scales: {
+        ...baseOpts.scales,
+        x: {
+          type: 'linear',
+          grid: { color: border, lineWidth: 0.5 },
+          ticks: {
+            font: { family: 'IBM Plex Mono' },
+            maxTicksLimit: 10,
+            callback: v => { const d = new Date(v); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); },
+          },
+        },
+      },
+    },
   });
 
   const backProj  = {{ backward_projection | tojson }};
