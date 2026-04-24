@@ -127,7 +127,7 @@ None. No transitions, no animations, no skeleton loaders. If something takes tim
 
 **Blog** — wide measure for reading (65ch), generous vertical spacing between sections, no sidebar.
 
-**Gallery** — CSS grid of thumbnails, uniform square aspect ratio, no captions by default (reveal on hover via `title` attribute tooltip). No lightbox unless explicitly requested.
+**Gallery** — CSS grid of thumbnails, uniform square aspect ratio, no captions by default (reveal on hover via `title` attribute tooltip). Lightbox (high-resolution image in an overlay) is approved for the gallery. No lightbox on any other page.
 
 **Expenses / Wealth / Health** — dense tabular data is expected; prioritize readable tables over cards. Summaries at the top, detail below.
 

@@ -70,11 +70,15 @@ scripts/
 
 **Gallery:** Images referenced by path in DB. Lazy-load; never ship full-resolution to browser. `GET /gallery` is public. Upload routes are admin only.
 
-**Library/Expenses/Wealth/Health:** All restricted — any logged-in user (`require_auth`) can view; write operations require `require_admin`. `/library` must not appear in sitemaps or public nav. Charts via Chart.js CDN or server-rendered SVG.
+**Library/Expenses/Wealth/Health:** All restricted — any logged-in user (`require_auth`) can view; write operations require `require_admin`. `/library` must not appear in sitemaps or public nav. Charts: server-rendered SVG or bundled JS chart library; no CDN scripts.
 
-**Expenses transactions schema:** `date`, `amount`, `description`, `category`, `account`, `type` (debit/credit). CSV bulk import with configurable per-bank parser. Categories are user-defined in DB.
+**Expenses transactions schema:** `date`, `amount`, `description`, `category`, `account`, `type` (debit). Tracks spending only — income/credit rows are not stored. CSV bulk import with configurable per-bank parser. Categories are user-defined in DB. Default seed categories: home, entertainment, shopping, hobbies, eating out, other. Top-level metrics: 6-month rolling average spend/day, 30-day average spend/day, and monthly totals for current month + prior 2. Monthly totals chart defaults to combined total; a dropdown allows filtering to a single category.
 
-**Wealth accounts schema:** `balance`, `type`, `institution`, `last_updated`. Net worth = assets − liabilities.
+**Wealth accounts schema:** `balance`, `type`, `institution`, `last_updated`. Net worth = assets − liabilities. The accounts table is hidden by default and expands on user action. Projection chart shows a 5-year backward projection with a dashed line style; the actual net worth line (grey) is overlaid, limited to 5 years prior from the current date.
+
+**Gallery:** Grid shows 3–6 thumbnails. Lightbox (high-resolution image in an overlay) is approved for the gallery. Upload route is `/gallery/upload` (admin only). Rotation always regenerates the thumbnail.
+
+**Health:** Charts are line graphs showing the average daily value calculated over a rolling week window.
 
 ## Security Constraints
 

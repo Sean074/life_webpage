@@ -1,6 +1,6 @@
 # Personal Website Outline — Sean O'Meara
 
-Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic design (IBM Plex Mono, max 720px content width). Footer on every page shows a random quote from `data/quotes.csv`.
+Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic design (IBM Plex Mono, max 720px content / 960px dashboard pages). Footer on every page shows a random quote from `data/quotes.csv`.
 
 ---
 
@@ -30,9 +30,9 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 - Category filter: Drawings / Paintings / Photography
 - Lazy-load thumbnails.
 - Images referenced by path in DB; assets in `content/art/`
-- Admin only: upload images (### Gallery — `/gallery_load` (restricted — any logged-in admin))
+- Admin only: upload images (### Gallery — `/gallery/upload` (restricted — any logged-in admin))
     - Images can be uploaded through a page in the private section.
-    - Images may need to be rotated from their default. This should be done prior to creation of the thumbnail, so the thumbnail has the correct orientation.
+    - Images may need to be rotated from their default. Rotation regenerates the thumbnail automatically, so the displayed thumbnail always reflects the current rotation.
     - Loading the image creates the thumbnail and updates the gallery db.
 
 ---

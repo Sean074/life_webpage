@@ -104,7 +104,7 @@ All POST forms use the double-submit cookie pattern:
 1. On `GET /login`, a random token is generated with `secrets.token_hex(16)`, embedded as a hidden form field, and also set as a `csrf_token` cookie (`httponly=False` so JS can read it if needed).
 2. On `POST /login`, the form field value and cookie value are compared using `secrets.compare_digest`. Mismatch → 400.
 
-Apply this same pattern to any new POST form that is not protected by `require_admin` (admin routes are already behind auth, which provides session-level protection, but adding CSRF to them is harmless and preferred).
+Apply this same pattern to **all** POST forms, regardless of auth level. Admin routes are behind session auth, but CSRF protection is still required — defense in depth.
 
 ---
 
