@@ -1,135 +1,195 @@
-# Deployment Guide — Hetzner VPS
+# Deployment Guide
 
-## Prerequisites
+## Deployment Options
 
-- A Hetzner account (hetzner.com)
-- A domain name pointed at the server's IP (A record)
-- Your GitHub repo is accessible (or you'll SCP files up)
+- **[Dokploy on Hostinger](#dokploy-on-hostinger-ubuntu-2404)** ← current/primary
+- [Hetzner VPS (legacy systemd)](#hetzner-vps-legacy)
 
 ---
 
-## 1. Provision the Server
+## Dokploy on Hostinger (Ubuntu 24.04)
 
-In the Hetzner console:
+Dokploy is a self-hosted PaaS that manages Docker containers, reverse proxying (Traefik), and SSL automatically. The app runs from the `Dockerfile` at the repo root.
 
-- **Image:** Ubuntu 24.04
-- **Type:** CX22 (2 vCPU / 4 GB RAM) — overkill but cheap
-- **Add your SSH public key** during setup
+### Prerequisites
+
+- Hostinger VPS running Ubuntu 24.04 with root SSH access
+- A domain with an A record pointed at the VPS IP
+- Git repository accessible (GitHub, GitLab, etc.)
+
+---
+
+### 1. Install Dokploy on the VPS
 
 ```bash
-# Verify you can log in
 ssh root@<server-ip>
+curl -sSL https://dokploy.com/install.sh | sh
+```
+
+Dokploy will start on port `3000`. Visit `http://<server-ip>:3000` to complete the web UI setup and create your admin account.
+
+---
+
+### 2. Create the Application in Dokploy
+
+In the Dokploy UI:
+
+1. **Projects → New Project** → create a project (e.g. `life`)
+2. **Add Service → Application**
+3. **Source:** connect your Git provider and select this repo
+4. **Build type:** Dockerfile (auto-detected from repo root)
+5. **Port:** `8000`
+
+---
+
+### 3. Set Environment Variables
+
+In the application's **Environment** tab, add:
+
+```
+SECRET_KEY=<generate with: python3 -c "import secrets; print(secrets.token_hex(32))">
 ```
 
 ---
 
-## 2. Run the Server Setup Script
+### 4. Configure Persistent Storage
 
-Copy `scripts/server_setup.sh` to the server and run it as root:
+The `data/` directory holds the SQLite databases and uploaded images. It must persist across deploys.
+
+In the application's **Mounts** tab, add a volume mount:
+
+| Host path | Container path |
+|-----------|---------------|
+| `/var/lib/dokploy/volumes/life-data` | `/app/data` |
+
+Create the directory on the VPS before first deploy:
+
+```bash
+ssh root@<server-ip> "mkdir -p /var/lib/dokploy/volumes/life-data/images"
+```
+
+---
+
+### 5. Configure Domain and SSL
+
+In the application's **Domains** tab:
+
+1. Add your domain (e.g. `yourdomain.com`)
+2. Enable **HTTPS** — Dokploy provisions Let's Encrypt automatically via Traefik
+
+---
+
+### 6. Deploy
+
+Click **Deploy** in the Dokploy UI (or push to your configured branch — Dokploy can auto-deploy on push via webhook).
+
+---
+
+### 7. Initialise the Database and Create Your Admin User
+
+After the first successful deploy, open the application's **Terminal** tab in Dokploy and run:
+
+```bash
+# Run migrations
+for f in migrations/*.sql; do sqlite3 data/expenses.db < "$f" 2>/dev/null; done
+
+# Create admin user
+python scripts/create_user.py --username <name> --role admin
+```
+
+---
+
+### 8. Upload Existing Data (first deploy only)
+
+The `data/` directory is gitignored. Copy your local databases and images to the persistent volume on the VPS:
+
+```bash
+rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/
+```
+
+---
+
+### Ongoing Operations
+
+| Task | How |
+|------|-----|
+| Deploy new code | Push to the tracked branch (auto-deploy), or click **Deploy** in UI |
+| View logs | Dokploy UI → application → **Logs** tab |
+| Restart app | Dokploy UI → application → **Restart** |
+| Add a user | Dokploy UI → application → **Terminal** → `python scripts/create_user.py --username X --role user` |
+| Backup databases | `rsync -avz root@<server-ip>:/var/lib/dokploy/volumes/life-data/ ./data-backup/` |
+
+---
+
+### Local Docker Testing
+
+Before pushing, verify the container works locally:
+
+```bash
+docker build -t life .
+docker run -p 8000:8000 -v $(pwd)/data:/app/data --env-file .env life
+```
+
+Visit `http://localhost:8000`.
+
+---
+
+## Hetzner VPS (legacy)
+
+Traditional deploy: rsync + systemd + nginx + certbot. No Docker required.
+
+### Prerequisites
+
+- Hetzner account, CX22 server (Ubuntu 24.04), SSH key added
+- Domain A record pointed at server IP
+
+### 1. Provision and set up the server
 
 ```bash
 scp scripts/server_setup.sh root@<server-ip>:~/
 ssh root@<server-ip> "bash ~/server_setup.sh"
 ```
 
-This script installs Python, nginx, certbot, and creates the `app` system user.
-
----
-
-## 3. Deploy the Application
-
-From your local machine:
+### 2. Deploy and configure
 
 ```bash
-# First deploy
 bash scripts/deploy.sh <server-ip>
 
-# Subsequent deploys — same command
-bash scripts/deploy.sh <server-ip>
-```
-
-What `deploy.sh` does:
-1. Rsync the app code (excludes `.env`, `data/`, `.venv/`)
-2. On the server: installs/updates Python deps, restarts the systemd service
-
----
-
-## 4. Configure the Environment
-
-SSH into the server and create the `.env` file:
-
-```bash
 ssh app@<server-ip>
-nano /home/app/life/.env
-```
-
-Paste and fill in:
-
-```
-SECRET_KEY=<generate with: python3 -c "import secrets; print(secrets.token_hex(32))">
-```
-
-Then restart the service:
-
-```bash
+nano /home/app/life/.env   # set SECRET_KEY
 sudo systemctl restart life
 ```
 
----
-
-## 5. Set Up HTTPS
+### 3. HTTPS
 
 ```bash
 ssh root@<server-ip>
 certbot --nginx -d yourdomain.com
 ```
 
-Certbot auto-renews via a systemd timer — no further action needed.
-
----
-
-## 6. Initialise the Database and Create Your User
+### 4. Database init and user creation
 
 ```bash
 ssh app@<server-ip>
-cd /home/app/life
-source .venv/bin/activate
-
-# Run any pending migrations
+cd /home/app/life && source .venv/bin/activate
 for f in migrations/*.sql; do sqlite3 data/expenses.db < "$f" 2>/dev/null; done
-
-# Create your admin user
 python scripts/create_user.py --username <name> --role admin
 ```
 
----
-
-## 7. Upload Existing Data (first deploy only)
-
-The `data/` directory is gitignored. Copy your local databases and images up:
+### 5. Upload data
 
 ```bash
 rsync -avz --progress data/ app@<server-ip>:/home/app/life/data/
 ```
 
----
-
-## Ongoing Operations
+### Ongoing Operations
 
 | Task | Command |
 |------|---------|
 | Deploy new code | `bash scripts/deploy.sh <server-ip>` |
-| View app logs | `ssh root@<server-ip> journalctl -u life -f` |
+| View logs | `ssh root@<server-ip> journalctl -u life -f` |
 | Restart app | `ssh root@<server-ip> systemctl restart life` |
 | Add a user | `ssh app@<server-ip> "cd /home/app/life && source .venv/bin/activate && python scripts/create_user.py --username X --role user"` |
 | Backup databases | `rsync -avz app@<server-ip>:/home/app/life/data/ ./data-backup/` |
 
----
-
-## Nginx Config Location
-
-`/etc/nginx/sites-available/life` — created by `server_setup.sh`, updated by certbot.
-
-## Systemd Service Location
-
-`/etc/systemd/system/life.service` — created by `server_setup.sh`.
+Config file locations: nginx at `/etc/nginx/sites-available/life`, systemd at `/etc/systemd/system/life.service`.
