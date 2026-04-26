@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Expenses — Sean O'Meara{% endblock %}
+{% block main_class %}container-wide{% endblock %}
+
+{% block content %}
+
+  <h1>Expenses</h1>
+
+  <!-- ── Summary ────────────────────────────────────────── -->
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th class="numeric">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Daily avg (6-month)</td><td class="numeric">${{ "%.2f"|format(summary.avg_daily_6mo or 0) }}</td></tr>
+      <tr><td>Daily avg (last 30 days)</td><td class="numeric">${{ "%.2f"|format(summary.avg_daily_30d or 0) }}</td></tr>
+      <tr><td>{{ month_labels[0] }}</td><td class="numeric">${{ "%.2f"|format(summary.month_0 or 0) }}</td></tr>
+      <tr><td>{{ month_labels[1] }}</td><td class="numeric">${{ "%.2f"|format(summary.month_1 or 0) }}</td></tr>
+      <tr><td>{{ month_labels[2] }}</td><td class="numeric">${{ "%.2f"|format(summary.month_2 or 0) }}</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Charts ─────────────────────────────────────────── -->
+  {% if cat_totals %}
+  <h2>Spending by category</h2>
+  <canvas id="chart-categories" height="80"></canvas>
+  {% endif %}
+
+  {% if monthly %}
+  <div style="display:flex;align-items:baseline;gap:1rem;margin-top:2rem">
+    <h2 style="margin:0">Monthly totals</h2>
+    <select id="monthly-view" style="font-family:inherit;font-size:0.85rem">
+      <option value="__total__">Total</option>
+      {% for cat in categories %}
+      <option value="{{ cat.name }}">{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <canvas id="chart-monthly" height="80"></canvas>
+  {% endif %}
+
+  <!-- ── Admin panel ────────────────────────────────────── -->
+  {% if user.role == 'admin' %}
+  <details class="admin-panel">
+    <summary>Add transaction</summary>
+    <form method="post" action="/expenses/transactions" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-row">
+        <label>Date</label>
+        <input type="date" name="txn_date" value="{{ today }}" required>
+      </div>
+      <div class="form-row">
+        <label>Amount</label>
+        <input type="number" name="amount" step="0.01" min="0" required>
+      </div>
+      <div class="form-row">
+        <label>Description</label>
+        <input type="text" name="description">
+      </div>
+      <div class="form-row">
+        <label>Category</label>
+        <select name="category">
+          {% for cat in categories %}
+          <option value="{{ cat.name }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Account</label>
+        <input type="text" name="account">
+      </div>
+      <input type="hidden" name="type" value="debit">
+      <button type="submit" class="btn btn-primary">add</button>
+    </form>
+  </details>
+
+  <details class="admin-panel">
+    <summary>Import CSV</summary>
+    <form method="post" action="/expenses/import" class="inline-form" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-row">
+        <label>Bank format</label>
+        <select name="bank">
+          {% for b in bank_options %}
+          <option value="{{ b }}">{{ b.replace('_', ' ') }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <label>CSV file</label>
+        <input type="file" name="file" accept=".csv" required>
+      </div>
+      <button type="submit" class="btn btn-primary">import</button>
+    </form>
+  </details>
+
+  <details class="admin-panel">
+    <summary>Manage categories</summary>
+    <form method="post" action="/expenses/categories" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="form-row">
+        <label>New category</label>
+        <input type="text" name="name" required>
+      </div>
+      <button type="submit" class="btn btn-primary">add</button>
+    </form>
+    {% if categories %}
+    <table>
+      <thead>
+        <tr><th>Category</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>{{ cat.name }}</td>
+          <td>
+            <form method="post" action="/expenses/categories/{{ cat.id }}/delete" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn-danger">delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </details>
+  {% endif %}
+
+  <!-- ── Transaction table ──────────────────────────────── -->
+  <details class="projection-detail">
+    <summary>Show all transactions</summary>
+    {% if transactions %}
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Account</th>
+          <th>Type</th>
+          <th class="numeric">Amount</th>
+          {% if user.role == 'admin' %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td>{{ t.date }}</td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.category }}</td>
+          <td>{{ t.account }}</td>
+          <td>{{ t.type }}</td>
+          <td class="numeric">${{ "%.2f"|format(t.amount) }}</td>
+          {% if user.role == 'admin' %}
+          <td>
+            <details>
+              <summary>edit</summary>
+              <form method="post" action="/expenses/transactions/{{ t.id }}/edit" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="form-row">
+                  <label>Date</label>
+                  <input type="date" name="txn_date" value="{{ t.date }}" required>
+                </div>
+                <div class="form-row">
+                  <label>Amount</label>
+                  <input type="number" name="amount" step="0.01" min="0" value="{{ t.amount }}" required>
+                </div>
+                <div class="form-row">
+                  <label>Description</label>
+                  <input type="text" name="description" value="{{ t.description }}">
+                </div>
+                <div class="form-row">
+                  <label>Category</label>
+                  <select name="category">
+                    {% for cat in categories %}
+                    <option value="{{ cat.name }}"{% if cat.name == t.category %} selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label>Account</label>
+                  <input type="text" name="account" value="{{ t.account }}">
+                </div>
+                <input type="hidden" name="type" value="debit">
+                <button type="submit" class="btn btn-primary">save</button>
+              </form>
+              <form method="post" action="/expenses/transactions/{{ t.id }}/delete" class="inline-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-danger">delete</button>
+              </form>
+            </details>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No transactions yet.</p>
+    {% endif %}
+  </details>
+
+{% if cat_totals or monthly %}
+<script src="/static/js/chart.umd.min.js"></script>
+<script>
+(function () {
+  const style  = getComputedStyle(document.documentElement);
+  const accent = style.getPropertyValue('--accent').trim() || '#1a1aff';
+  const border = style.getPropertyValue('--border').trim() || '#c0c0c0';
+
+  const baseOpts = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        grid: { color: border, lineWidth: 0.5 },
+        ticks: { font: { family: 'IBM Plex Mono' }, maxTicksLimit: 12 },
+      },
+      y: {
+        min: 0,
+        grid: { color: border, lineWidth: 0.5 },
+        ticks: { font: { family: 'IBM Plex Mono' }, callback: v => '$' + v.toFixed(0) },
+      },
+    },
+  };
+
+  {% if cat_totals %}
+  new Chart(document.getElementById('chart-categories'), {
+    type: 'bar',
+    data: {
+      labels:   {{ cat_totals | map(attribute='category') | list | tojson }},
+      datasets: [{
+        data:            {{ cat_totals | map(attribute='total') | list | tojson }},
+        backgroundColor: accent,
+        borderColor:     accent,
+        borderWidth:     1,
+      }],
+    },
+    options: baseOpts,
+  });
+  {% endif %}
+
+  {% if monthly %}
+  const monthlyAllLabels = {{ monthly | map(attribute='month') | list | tojson }};
+  const monthlyTotals    = {{ monthly | map(attribute='total') | list | tojson }};
+  const monthlyByCat     = {{ monthly_by_cat | tojson }};
+
+  // Build lookup: category -> { month -> total }
+  const catMap = {};
+  for (const row of monthlyByCat) {
+    if (!catMap[row.category]) catMap[row.category] = {};
+    catMap[row.category][row.month] = row.total;
+  }
+
+  const monthlyChart = new Chart(document.getElementById('chart-monthly'), {
+    type: 'line',
+    data: {
+      labels: monthlyAllLabels,
+      datasets: [{
+        data:                 monthlyTotals,
+        borderColor:          accent,
+        borderWidth:          1.5,
+        pointRadius:          3,
+        pointBackgroundColor: accent,
+        tension:              0.1,
+        fill:                 false,
+      }],
+    },
+    options: baseOpts,
+  });
+
+  document.getElementById('monthly-view').addEventListener('change', function () {
+    const sel = this.value;
+    if (sel === '__total__') {
+      monthlyChart.data.labels   = monthlyAllLabels;
+      monthlyChart.data.datasets[0].data = monthlyTotals;
+    } else {
+      const lookup = catMap[sel] || {};
+      // Use all months from total as the x-axis, fill 0 where category has no data
+      monthlyChart.data.labels   = monthlyAllLabels;
+      monthlyChart.data.datasets[0].data = monthlyAllLabels.map(m => lookup[m] || 0);
+    }
+    monthlyChart.update();
+  });
+  {% endif %}
+})();
+</script>
+{% endif %}
+
+{% endblock %}
