@@ -124,3 +124,45 @@ def create_post(slug: str, title: str, date: str, tags: str, body: str) -> None:
     path = os.path.join(POSTS_DIR, f"{slug}.md")
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
+
+
+def get_post_raw(slug: str) -> Optional[dict]:
+    """Load post for editing — includes drafts, returns raw (un-rendered) body."""
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        return None
+    path = os.path.join(POSTS_DIR, f"{slug}.md")
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = f.read()
+    except OSError:
+        return None
+    fm, body = _parse_frontmatter(raw)
+    return {
+        "slug": slug,
+        "title": fm.get("title", slug),
+        "date": fm.get("date", ""),
+        "tags": fm.get("tags", ""),
+        "draft": fm.get("draft", "false").lower() == "true",
+        "body": body,
+    }
+
+
+def update_post(slug: str, title: str, date: str, tags: str, body: str, draft: bool) -> None:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        raise ValueError(f"Invalid slug: {slug!r}")
+    path = os.path.join(POSTS_DIR, f"{slug}.md")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Post not found: {slug!r}")
+    tags_clean = ", ".join(t.strip() for t in tags.split(",") if t.strip())
+    draft_val = "true" if draft else "false"
+    content = f"---\ntitle: {title}\ndate: {date}\ntags: {tags_clean}\ndraft: {draft_val}\n---\n\n{body}"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
+def delete_post(slug: str) -> None:
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
+        raise ValueError(f"Invalid slug: {slug!r}")
+    path = os.path.join(POSTS_DIR, f"{slug}.md")
+    if os.path.exists(path):
+        os.remove(path)

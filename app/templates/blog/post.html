@@ -19,6 +19,16 @@
           {% endfor %}
         {% endif %}
       </p>
+      {% if user and user.role == 'admin' %}
+      <p class="meta">
+        <a href="/blog/{{ post.slug }}/edit">Edit</a>
+        &nbsp;&middot;&nbsp;
+        <form method="post" action="/blog/{{ post.slug }}/delete" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this post?')">Delete</button>
+        </form>
+      </p>
+      {% endif %}
     </header>
     <div class="post-body">
       {{ post.body | safe }}
