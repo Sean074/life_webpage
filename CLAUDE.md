@@ -28,30 +28,33 @@ To add a user: `python scripts/create_user.py --username <name> --role <admin|us
 
 ## Deploying
 
-Hosted on a Hetzner CX22 VPS (Ubuntu 24.04) behind nginx. App runs as the `app` system user via a systemd service. Full steps in `docs/deploy.md`.
+Hosted on a Hostinger VPS running Docker via Dokploy, with Traefik as the reverse proxy (auto-provisioned Let's Encrypt SSL). Full steps in `docs/deploy.md`.
 
-**First deploy (one-time server setup):**
-```bash
-scp scripts/server_setup.sh root@<server-ip>:~/
-ssh root@<server-ip> "bash ~/server_setup.sh yourdomain.com"
-bash scripts/deploy.sh <server-ip>           # sync code and install deps
-ssh app@<server-ip> "nano /home/app/life/.env"  # set SECRET_KEY
-ssh root@<server-ip> "certbot --nginx -d yourdomain.com"
-rsync -avz data/ app@<server-ip>:/home/app/life/data/  # seed DBs and images
-ssh app@<server-ip> "cd /home/app/life && source .venv/bin/activate && python scripts/create_user.py --username <name> --role admin"
-```
+**First deploy (one-time setup via Dokploy UI):**
+1. SSH into the VPS and install Dokploy: `curl -sSL https://dokploy.com/install.sh | sh`
+2. Visit `http://<server-ip>:3000` to create the Dokploy admin account
+3. Projects → New Project → Add Service → Application; connect Git repo, build type: Dockerfile, port: `8000`
+4. **Environment tab:** set `SECRET_KEY` (generate: `python3 -c "import secrets; print(secrets.token_hex(32))"`) and `HTTPS_ONLY=true`
+5. **Mounts tab:** add volume `/var/lib/dokploy/volumes/life-data` → `/app/data`; create it first: `ssh root@<server-ip> "mkdir -p /var/lib/dokploy/volumes/life-data/images"`
+6. **Domains tab:** add domain, enable HTTPS (Traefik handles cert automatically)
+7. Click **Deploy**; once running, open the **Terminal** tab and run:
+   ```bash
+   bash scripts/init_db.sh
+   python scripts/create_user.py --username <name> --role admin
+   ```
+8. Seed existing data (first deploy only): `rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/`
 
-**Subsequent deploys:**
-```bash
-bash scripts/deploy.sh <server-ip>
-```
+**Subsequent deploys:** push to the tracked branch (Dokploy auto-deploys via webhook), or click **Deploy** in the UI.
 
 **Common ops:**
-- Logs: `ssh root@<server-ip> journalctl -u life -f`
-- Restart: `ssh root@<server-ip> systemctl restart life`
-- Backup data: `rsync -avz app@<server-ip>:/home/app/life/data/ ./data-backup/`
+- Logs: Dokploy UI → application → **Logs** tab
+- Restart: Dokploy UI → application → **Restart**
+- Add a user: Dokploy UI → application → **Terminal** → `python scripts/create_user.py --username X --role user`
+- Backup data: `rsync -avz root@<server-ip>:/var/lib/dokploy/volumes/life-data/ ./data-backup/`
 
 The `data/` directory (DBs, images) is never in git — sync it manually with rsync.
+
+**Legacy (Hetzner VPS):** the old rsync + systemd + nginx setup is documented in the Hetzner section of `docs/deploy.md`.
 
 ## Architecture
 
@@ -75,8 +78,9 @@ docs/
 migrations/           # Plain .sql files — no migration framework
 scripts/
   create_user.py      # CLI to add users to the DB
-  server_setup.sh     # One-time VPS provisioning (run as root)
-  deploy.sh           # Rsync + restart — run from local machine on every deploy
+  init_db.sh          # Run all migrations against the correct DB files (idempotent)
+  server_setup.sh     # (legacy Hetzner) one-time VPS provisioning
+  deploy.sh           # (legacy Hetzner) rsync + restart
 ```
 
 ## Required Standards

@@ -36,8 +36,7 @@ cp .env.example .env
 ### 4. Run migrations
 
 ```bash
-sqlite3 data/library.db < migrations/001_library.sql
-sqlite3 data/library.db < migrations/002_users.sql
+bash scripts/init_db.sh
 ```
 
 ### 5. Create an admin user

@@ -91,7 +91,7 @@ After the first successful deploy, open the application's **Terminal** tab in Do
 
 ```bash
 # Run migrations
-for f in migrations/*.sql; do sqlite3 data/expenses.db < "$f" 2>/dev/null; done
+bash scripts/init_db.sh
 
 # Create admin user
 python scripts/create_user.py --username <name> --role admin
@@ -172,7 +172,7 @@ certbot --nginx -d yourdomain.com
 ```bash
 ssh app@<server-ip>
 cd /home/app/life && source .venv/bin/activate
-for f in migrations/*.sql; do sqlite3 data/expenses.db < "$f" 2>/dev/null; done
+bash scripts/init_db.sh
 python scripts/create_user.py --username <name> --role admin
 ```
 

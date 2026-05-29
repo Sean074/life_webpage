@@ -8,11 +8,11 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 
 **Goal:** A first deploy that actually works end-to-end. Do all of these before pointing a domain at the VPS.
 
-- [ ] **Fix `.env.example`**
+- [x] **Fix `.env.example`**
   - Blank out `SECRET_KEY` (currently ships a real-looking placeholder)
   - Set `HTTPS_ONLY=false` for local dev (current `true` silently breaks local login on plain http)
   - Add a comment that production must override `HTTPS_ONLY=true` via Dokploy env tab
-- [ ] **Write `scripts/init_db.sh`**
+- [x] **Write `scripts/init_db.sh`**
   - Maps each migration to its correct DB file:
     - `001_library.sql`, `002_users.sql` → `library.db`
     - `003_gallery.sql`, `004_gallery_rotation.sql` → `gallery.db`
@@ -22,10 +22,10 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - Idempotent — safe to re-run
   - Replace the broken `for f in migrations/*.sql; do sqlite3 data/expenses.db ...` loop in `docs/deploy.md` Step 7 with a call to this script
   - Update README Section 4 to call this script instead of two hand-rolled `sqlite3` invocations
-- [ ] **Reconcile `CLAUDE.md` with reality**
+- [x] **Reconcile `CLAUDE.md` with reality**
   - Replace Hetzner CX22 / systemd / nginx as primary with Hostinger / Dokploy / Traefik
   - Keep Hetzner as the "legacy" section, matching `docs/deploy.md`
-- [ ] **Local Docker dry-run**
+- [x] **Local Docker dry-run**
   - `docker build -t life .`
   - `docker run -p 8000:8000 -v $(pwd)/data:/app/data --env-file .env life`
   - Run `init_db.sh` inside the container
