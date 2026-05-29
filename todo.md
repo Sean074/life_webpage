@@ -39,7 +39,7 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 
 **Goal:** Hardening required before exposing the app to the public internet.
 
-- [ ] **Central CSRF dependency**
+- [x] **Central CSRF dependency**
   - Replace the 12+ copies of `secrets.compare_digest(csrf_token, cookie_csrf)` with a single `verify_csrf` dependency
   - Single point of token *issuance* on GET routes too (currently scattered, inconsistently cleared)
 - [ ] **Production env**

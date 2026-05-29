@@ -1,14 +1,21 @@
 import os
-import secrets
 import sqlite3
 import time
 from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
-from app.auth import clear_session, create_session, get_current_user, verify_password
+from app.auth import (
+    CSRF_COOKIE_NAME,
+    clear_session,
+    create_session,
+    get_current_user,
+    issue_csrf,
+    verify_csrf,
+    verify_password,
+)
 from app.templates_config import templates
 
 router = APIRouter()
@@ -47,19 +54,16 @@ def _get_user_by_username(username: str) -> Optional[dict]:
 
 
 @router.get("/login")
-async def login_get(request: Request):
+async def login_get(request: Request, csrf_token: str = Depends(issue_csrf)):
     if get_current_user(request):
         return RedirectResponse("/", status_code=303)
-    csrf_token = secrets.token_hex(16)
-    response = templates.TemplateResponse("login.html", {
+    return templates.TemplateResponse("login.html", {
         "request": request,
         "user": None,
         "active": "login",
         "csrf_token": csrf_token,
         "error": None,
     })
-    response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="lax")
-    return response
 
 
 @router.post("/login")
@@ -68,18 +72,9 @@ async def login_post(
     username: str = Form(...),
     password: str = Form(...),
     csrf_token: str = Form(...),
+    _csrf: None = Depends(verify_csrf),
 ):
     ip = request.headers.get("X-Real-IP") or request.client.host
-
-    cookie_csrf = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_csrf):
-        return templates.TemplateResponse("login.html", {
-            "request": request,
-            "user": None,
-            "active": "login",
-            "csrf_token": secrets.token_hex(16),
-            "error": "Invalid request. Please try again.",
-        }, status_code=400)
 
     if _is_rate_limited(ip):
         return templates.TemplateResponse("login.html", {
@@ -103,7 +98,7 @@ async def login_post(
 
     response = RedirectResponse("/", status_code=303)
     create_session(response, user["id"])
-    response.delete_cookie("csrf_token")
+    response.delete_cookie(CSRF_COOKIE_NAME)
     return response
 
 

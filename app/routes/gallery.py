@@ -3,7 +3,14 @@ import secrets
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.auth import get_current_user, require_admin
+from app.auth import (
+    CSRF_COOKIE_NAME,
+    _CSRF_COOKIE_KWARGS,
+    get_current_user,
+    issue_csrf,
+    require_admin,
+    verify_csrf,
+)
 from app.services import gallery as gallery_svc
 from app.models.gallery import all_categories, init_db
 from app.templates_config import templates
@@ -16,7 +23,7 @@ CATEGORIES = gallery_svc.CATEGORIES
 
 
 @router.get("/gallery", response_class=HTMLResponse)
-async def gallery_index(request: Request):
+async def gallery_index(request: Request, csrf_token: str = Depends(issue_csrf)):
     user = get_current_user(request)
     cat_filter = request.query_params.get("category")
     if cat_filter and cat_filter in CATEGORIES:
@@ -24,24 +31,20 @@ async def gallery_index(request: Request):
     else:
         images = gallery_svc.get_all_images()
         cat_filter = None
-    response = templates.TemplateResponse("gallery/index.html", {
+    return templates.TemplateResponse("gallery/index.html", {
         "request": request,
         "user": user,
         "active": "gallery",
         "images": images,
         "categories": CATEGORIES,
         "cat_filter": cat_filter,
+        "csrf_token": csrf_token,
     })
-    if user and user.get("role") == "admin":
-        csrf_token = secrets.token_hex(16)
-        response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="lax")
-    return response
 
 
 @router.get("/gallery/upload", response_class=HTMLResponse)
-async def gallery_upload_get(request: Request, user=Depends(require_admin)):
-    csrf_token = secrets.token_hex(16)
-    response = templates.TemplateResponse("gallery/upload.html", {
+async def gallery_upload_get(request: Request, user=Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
+    return templates.TemplateResponse("gallery/upload.html", {
         "request": request,
         "user": user,
         "active": "gallery_upload",
@@ -49,30 +52,18 @@ async def gallery_upload_get(request: Request, user=Depends(require_admin)):
         "csrf_token": csrf_token,
         "errors": {},
     })
-    response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="lax")
-    return response
 
 
 @router.post("/gallery/upload")
 async def gallery_upload_post(
     request: Request,
     user=Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     category: str = Form(...),
     title: str = Form(""),
     csrf_token: str = Form(...),
     file: UploadFile = File(...),
 ):
-    cookie_csrf = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_csrf):
-        return templates.TemplateResponse("gallery/upload.html", {
-            "request": request,
-            "user": user,
-            "active": "gallery",
-            "categories": CATEGORIES,
-            "csrf_token": csrf_token,
-            "errors": {"csrf": "Invalid request. Please try again."},
-        }, status_code=400)
-
     errors: dict = {}
     if category not in CATEGORIES:
         errors["category"] = "Select a valid category."
@@ -97,20 +88,21 @@ async def gallery_upload_post(
             "errors": errors,
             "values": {"category": category, "title": title},
         }, status_code=422)
-        resp.set_cookie("csrf_token", new_csrf, httponly=False, samesite="lax")
+        resp.set_cookie(CSRF_COOKIE_NAME, new_csrf, **_CSRF_COOKIE_KWARGS)
         return resp
 
     return RedirectResponse("/gallery", status_code=303)
 
 
 @router.post("/gallery/{image_id}/rotate")
-async def gallery_rotate(image_id: int, request: Request, user=Depends(require_admin)):
-    form = await request.form()
-    csrf_token = form.get("csrf_token", "")
-    cookie_csrf = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_csrf):
-        return HTMLResponse("Invalid request.", status_code=400)
-    direction = form.get("direction", "cw")
+async def gallery_rotate(
+    image_id: int,
+    request: Request,
+    user=Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
+    csrf_token: str = Form(...),
+    direction: str = Form("cw"),
+):
     if direction not in ("cw", "ccw"):
         return HTMLResponse("Invalid direction.", status_code=400)
     gallery_svc.rotate_image(image_id, direction)
@@ -118,11 +110,12 @@ async def gallery_rotate(image_id: int, request: Request, user=Depends(require_a
 
 
 @router.post("/gallery/{image_id}/delete")
-async def gallery_delete(image_id: int, request: Request, user=Depends(require_admin)):
-    form = await request.form()
-    csrf_token = form.get("csrf_token", "")
-    cookie_csrf = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_csrf):
-        return HTMLResponse("Invalid request.", status_code=400)
+async def gallery_delete(
+    image_id: int,
+    request: Request,
+    user=Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
+    csrf_token: str = Form(...),
+):
     gallery_svc.remove_image(image_id)
     return RedirectResponse("/gallery", status_code=303)

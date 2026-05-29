@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
-from app.auth import require_admin, require_auth
+from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
 from app.templates_config import templates
 from app.models.library import (
     LIBRARY_ROOT,
@@ -57,18 +57,24 @@ async def search(
 
 
 @router.get("/sync")
-async def sync_get(request: Request, user: dict = Depends(require_admin)):
+async def sync_get(request: Request, user: dict = Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
     untracked = get_untracked_files()
     return templates.TemplateResponse("library/sync.html", {
         "request": request,
         "user": user,
         "active": "library",
         "untracked": untracked,
+        "csrf_token": csrf_token,
     })
 
 
 @router.post("/sync")
-async def sync_post(request: Request, user: dict = Depends(require_admin)):
+async def sync_post(
+    request: Request,
+    user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
+    csrf_token: str = Form(...),
+):
     for rel_path in get_untracked_files():
         pdf = LIBRARY_ROOT / rel_path
         discipline = pdf.parent.name if pdf.parent != LIBRARY_ROOT else None
@@ -91,7 +97,7 @@ async def review(request: Request, user: dict = Depends(require_auth)):
 
 
 @router.get("/items/{item_id}/edit")
-async def edit_get(request: Request, item_id: int, user: dict = Depends(require_admin)):
+async def edit_get(request: Request, item_id: int, user: dict = Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
     item = get_item(item_id)
     if not item:
         return RedirectResponse("/library/review", status_code=303)
@@ -101,6 +107,7 @@ async def edit_get(request: Request, item_id: int, user: dict = Depends(require_
         "active": "library",
         "item": item,
         "disciplines": all_disciplines(),
+        "csrf_token": csrf_token,
     })
 
 
@@ -108,6 +115,9 @@ async def edit_get(request: Request, item_id: int, user: dict = Depends(require_
 async def edit_post(
     request: Request,
     item_id: int,
+    user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
+    csrf_token: str = Form(...),
     title: str = Form(...),
     author: str = Form(""),
     ref_number: str = Form(""),
@@ -116,7 +126,6 @@ async def edit_post(
     comment: str = Form(""),
     rating: str = Form(""),
     tags: str = Form(""),
-    user: dict = Depends(require_admin),
 ):
     update_item(item_id, {
         "title": title,

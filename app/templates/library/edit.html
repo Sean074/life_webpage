@@ -5,7 +5,7 @@
 <p><small>{{ item.file_path or "" }}</small></p>
 
 <form method="post" action="/library/items/{{ item.id }}/edit">
-  <input type="hidden" name="csrf_token" value="">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
   <div class="form-row">
     <label for="title">Title</label>

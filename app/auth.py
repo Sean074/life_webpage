@@ -1,10 +1,11 @@
 import os
+import secrets
 import sqlite3
 from pathlib import Path
 from typing import Optional
 
 import bcrypt
-from fastapi import Depends, HTTPException, Request, Response
+from fastapi import Depends, Form, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 
@@ -90,3 +91,19 @@ def require_admin(user: dict = Depends(require_auth)) -> dict:
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
+
+
+CSRF_COOKIE_NAME = "csrf_token"
+_CSRF_COOKIE_KWARGS: dict = {"httponly": False, "samesite": "lax"}
+
+
+def issue_csrf(response: Response) -> str:
+    token = secrets.token_hex(16)
+    response.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return token
+
+
+def verify_csrf(request: Request, csrf_token: str = Form(...)) -> None:
+    cookie_token = request.cookies.get(CSRF_COOKIE_NAME, "")
+    if not secrets.compare_digest(csrf_token, cookie_token):
+        raise HTTPException(status_code=400, detail="Invalid CSRF token")

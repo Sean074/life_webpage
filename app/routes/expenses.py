@@ -1,10 +1,9 @@
-import secrets
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.auth import require_admin, require_auth
+from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
 from app.models import expenses as expenses_model
 from app.services import expenses as expenses_svc
 from app.templates_config import templates
@@ -24,9 +23,8 @@ def _month_label(months_ago: int) -> str:
 
 
 @router.get("", response_class=HTMLResponse)
-async def expenses_index(request: Request, user: dict = Depends(require_auth)):
-    csrf_token = secrets.token_hex(16)
-    response = templates.TemplateResponse("expenses/index.html", {
+async def expenses_index(request: Request, user: dict = Depends(require_auth), csrf_token: str = Depends(issue_csrf)):
+    return templates.TemplateResponse("expenses/index.html", {
         "request": request,
         "user": user,
         "active": "expenses",
@@ -41,14 +39,13 @@ async def expenses_index(request: Request, user: dict = Depends(require_auth)):
         "cat_totals": expenses_model.get_category_totals(),
         "bank_options": list(expenses_svc.PARSERS.keys()),
     })
-    response.set_cookie("csrf_token", csrf_token, httponly=False, samesite="lax")
-    return response
 
 
 @router.post("/transactions")
 async def add_transaction(
     request: Request,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
     txn_date: str = Form(...),
     amount: float = Form(...),
@@ -57,9 +54,6 @@ async def add_transaction(
     account: str = Form(""),
     type_: str = Form(..., alias="type"),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     expenses_model.add_transaction(txn_date, amount, description, category, account, type_)
     return RedirectResponse("/expenses", status_code=303)
 
@@ -69,6 +63,7 @@ async def edit_transaction(
     request: Request,
     txn_id: int,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
     txn_date: str = Form(...),
     amount: float = Form(...),
@@ -77,9 +72,6 @@ async def edit_transaction(
     account: str = Form(""),
     type_: str = Form(..., alias="type"),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     expenses_model.update_transaction(txn_id, txn_date, amount, description, category, account, type_)
     return RedirectResponse("/expenses", status_code=303)
 
@@ -89,11 +81,9 @@ async def delete_transaction(
     request: Request,
     txn_id: int,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     expenses_model.delete_transaction(txn_id)
     return RedirectResponse("/expenses", status_code=303)
 
@@ -102,13 +92,11 @@ async def delete_transaction(
 async def import_csv(
     request: Request,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
     bank: str = Form(...),
     file: UploadFile = File(...),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     contents = await file.read()
     try:
         transactions = expenses_svc.parse_csv(bank, contents)
@@ -124,12 +112,10 @@ async def import_csv(
 async def add_category(
     request: Request,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
     name: str = Form(...),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     expenses_model.add_category(name.strip().lower())
     return RedirectResponse("/expenses", status_code=303)
 
@@ -139,10 +125,8 @@ async def delete_category(
     request: Request,
     cat_id: int,
     user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
     csrf_token: str = Form(...),
 ):
-    cookie_token = request.cookies.get("csrf_token", "")
-    if not secrets.compare_digest(csrf_token, cookie_token):
-        return HTMLResponse("Invalid CSRF token", status_code=400)
     expenses_model.delete_category(cat_id)
     return RedirectResponse("/expenses", status_code=303)
