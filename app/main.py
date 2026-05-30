@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import sqlite3
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.auth import get_current_user
@@ -27,6 +29,17 @@ app.include_router(library_router)
 app.include_router(expenses_router)
 app.include_router(wealth_router)
 app.include_router(health_router)
+
+
+@app.get("/healthz")
+async def healthz():
+    try:
+        conn = sqlite3.connect("file:data/library.db?mode=ro", uri=True)
+        conn.execute("SELECT 1")
+        conn.close()
+        return {"ok": True}
+    except Exception:
+        return JSONResponse({"ok": False}, status_code=500)
 
 
 @app.get("/")

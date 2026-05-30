@@ -1,6 +1,6 @@
 anyio==4.12.1
 bleach==6.2.0
-Pillow>=11.0.0
+Pillow==11.3.0
 Markdown==3.9
 bcrypt==5.0.0
 click==8.1.8

@@ -57,10 +57,10 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - On success, invalidate other sessions (rotate `SECRET_KEY`-derived signing or bump a per-user session version) so a stolen cookie can't survive the rotation
   - Also surfaces 2FA enrollment / re-enrollment from the same page
   - **Rationale:** currently `scripts/create_user.py` is the only way to rotate a password — requires SSHing into the container, which is enough friction that rotations get delayed
-- [ ] **`GET /healthz` endpoint**
+- [x] **`GET /healthz` endpoint**
   - Opens a DB connection, returns `{"ok": true}`
   - Wire into Dokploy / Traefik healthcheck so a hung container is detected
-- [ ] **Pin dependencies**
+- [x] **Pin dependencies**
   - Replace `Pillow>=11.0.0` with an exact version
   - Consider `pip-compile` to generate a full `requirements.lock`
   - Rebuild reproducibility is a prerequisite for blaming bugs on code vs. environment
