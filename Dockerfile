@@ -20,4 +20,4 @@ RUN mkdir -p data/images
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["bash", "-c", "bash scripts/init_db.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

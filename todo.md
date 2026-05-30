@@ -25,14 +25,14 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - Either delete the calls (since `init_db.sh` now owns schema for `app.db`) or confirm each one is now a no-op against the consolidated DB
 - [x] **⚠️ Run `scripts/migrate_to_app_db.py` against the real data once**
   - All rows copied clean (449 transactions, 9 wealth accounts, 39 health records, 12 gallery images, 22 library items). Legacy DBs renamed to `.bak`. Script deleted.
-- [ ] **⚠️ Local Docker dry-run end-to-end** (gate for all of the above)
+- [x] **⚠️ Local Docker dry-run end-to-end** (gate for all of the above)
   - `docker build` (uses updated `requirements.lock`)
   - `docker run` with mounted volume
   - Run `init_db.sh` inside the container
   - Create admin user, log in, write a post, upload an image, edit a wealth account
   - `docker restart` — verify data survived and no orphan `.db` files appeared
   - Until this passes, do not deploy
-- [ ] **⚠️ Chain `init_db.sh` before `uvicorn` in container `CMD`**
+- [x] **⚠️ Chain `init_db.sh` before `uvicorn` in container `CMD`**
   - `/healthz` opens `data/app.db?mode=ro`; on a fresh container before init, the file doesn't exist and the probe returns 500
   - Dokploy will refuse to mark the container healthy and may restart-loop
   - Options: change Dockerfile `CMD` to `bash -c "bash scripts/init_db.sh && uvicorn ..."`, or split into a one-shot init container, or relax `/healthz` to distinguish "DB missing" (503) from "DB unreachable" (500)

@@ -82,6 +82,8 @@ def load_history() -> list[dict]:
 
 def latest_accounts_from_csv() -> list[dict]:
     """Return accounts seeded from the most recent CSV column."""
+    if not FINANCE_CSV.exists():
+        return []
     with FINANCE_CSV.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         header = next(reader)
