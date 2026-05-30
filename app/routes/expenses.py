@@ -10,8 +10,6 @@ from app.models import expenses as expenses_model
 from app.services import expenses as expenses_svc
 from app.templates_config import templates
 
-expenses_model.init_db()
-
 router = APIRouter(prefix="/expenses")
 
 

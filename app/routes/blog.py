@@ -156,7 +156,6 @@ async def blog_delete_post(
     request: Request,
     user=Depends(require_admin),
     _csrf: None = Depends(verify_csrf),
-    csrf_token: str = Form(...),
 ):
     blog_svc.delete_post(slug)
     return RedirectResponse("/blog", status_code=303)

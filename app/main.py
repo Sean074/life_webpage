@@ -9,6 +9,11 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.auth import get_current_user
+from app.models import expenses as expenses_model
+from app.models import health as health_model
+from app.models import wealth as wealth_model
+from app.models.gallery import init_db as gallery_init_db
+from app.services import wealth as wealth_svc
 from app.routes.admin import router as admin_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.blog import router as blog_router
@@ -21,6 +26,16 @@ from app.services.blog import get_recent_posts
 from app.templates_config import templates
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup():
+    expenses_model.init_db()
+    health_model.init_db()
+    gallery_init_db()
+    wealth_model.init_db(seed_accounts=wealth_svc.latest_accounts_from_csv())
+
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/art", StaticFiles(directory="data/images"), name="art")
 app.include_router(admin_router)

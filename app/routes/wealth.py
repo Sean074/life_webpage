@@ -10,9 +10,6 @@ from app.models import wealth as wealth_model
 from app.services import wealth as wealth_svc
 from app.templates_config import templates
 
-seed = wealth_svc.latest_accounts_from_csv()
-wealth_model.init_db(seed_accounts=seed)
-
 router = APIRouter(prefix="/wealth")
 
 ACCOUNT_TYPES = ["savings", "investment", "retirement", "property", "liability"]

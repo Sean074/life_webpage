@@ -11,10 +11,8 @@ from app.auth import (
     verify_csrf,
 )
 from app.services import gallery as gallery_svc
-from app.models.gallery import all_categories, init_db
+from app.models.gallery import all_categories
 from app.templates_config import templates
-
-init_db()
 
 router = APIRouter()
 

@@ -9,8 +9,6 @@ from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, requi
 from app.models import health as health_model
 from app.templates_config import templates
 
-health_model.init_db()
-
 router = APIRouter(prefix="/health")
 
 

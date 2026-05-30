@@ -87,9 +87,9 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 - [x] **Custom 404 / 500 templates**
   - Match the visual style standard
   - Stop leaking FastAPI's default JSON error responses
-- [ ] **Fix `POST /blog/<slug>/delete`** ([app/routes/blog.py:174](app/routes/blog.py:174))
+- [x] **Fix `POST /blog/<slug>/delete`** ([app/routes/blog.py:174](app/routes/blog.py:174))
   - Currently silently no-ops on CSRF mismatch — should return 400
-- [ ] **Move `init_db()` calls out of module import**
+- [x] **Move `init_db()` calls out of module import**
   - Currently called at import time in [routes/expenses.py:12](app/routes/expenses.py:12), [routes/health.py:11](app/routes/health.py:11), [routes/gallery.py:11](app/routes/gallery.py:11), [routes/wealth.py:12](app/routes/wealth.py:12)
   - Move to a single FastAPI `startup` event in `app/main.py`
 
