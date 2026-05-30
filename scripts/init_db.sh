@@ -20,4 +20,9 @@ sqlite3 "$DATA_DIR/wealth.db"   < "$SCRIPT_DIR/../migrations/005_wealth.sql"
 sqlite3 "$DATA_DIR/health.db"   < "$SCRIPT_DIR/../migrations/006_health.sql"
 sqlite3 "$DATA_DIR/expenses.db" < "$SCRIPT_DIR/../migrations/007_expenses.sql"
 
+# 008 uses ALTER TABLE ADD COLUMN — guard for idempotency
+if ! sqlite3 "$DATA_DIR/library.db" "PRAGMA table_info(users);" | grep -q "totp_secret"; then
+    sqlite3 "$DATA_DIR/library.db" < "$SCRIPT_DIR/../migrations/008_2fa.sql"
+fi
+
 echo "Database initialisation complete."

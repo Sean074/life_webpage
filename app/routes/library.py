@@ -1,7 +1,9 @@
+import secrets
+
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 
-from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
+from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, require_auth, verify_csrf
 from app.templates_config import templates
 from app.models.library import (
     LIBRARY_ROOT,
@@ -57,15 +59,18 @@ async def search(
 
 
 @router.get("/sync")
-async def sync_get(request: Request, user: dict = Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
+async def sync_get(request: Request, user: dict = Depends(require_admin)):
     untracked = get_untracked_files()
-    return templates.TemplateResponse("library/sync.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("library/sync.html", {
         "request": request,
         "user": user,
         "active": "library",
         "untracked": untracked,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/sync")
@@ -97,18 +102,21 @@ async def review(request: Request, user: dict = Depends(require_auth)):
 
 
 @router.get("/items/{item_id}/edit")
-async def edit_get(request: Request, item_id: int, user: dict = Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
+async def edit_get(request: Request, item_id: int, user: dict = Depends(require_admin)):
     item = get_item(item_id)
     if not item:
         return RedirectResponse("/library/review", status_code=303)
-    return templates.TemplateResponse("library/edit.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("library/edit.html", {
         "request": request,
         "user": user,
         "active": "library",
         "item": item,
         "disciplines": all_disciplines(),
-        "csrf_token": csrf_token,
+        "csrf_token": token,
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/items/{item_id}/edit")

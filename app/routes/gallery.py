@@ -7,7 +7,6 @@ from app.auth import (
     CSRF_COOKIE_NAME,
     _CSRF_COOKIE_KWARGS,
     get_current_user,
-    issue_csrf,
     require_admin,
     verify_csrf,
 )
@@ -23,7 +22,7 @@ CATEGORIES = gallery_svc.CATEGORIES
 
 
 @router.get("/gallery", response_class=HTMLResponse)
-async def gallery_index(request: Request, csrf_token: str = Depends(issue_csrf)):
+async def gallery_index(request: Request):
     user = get_current_user(request)
     cat_filter = request.query_params.get("category")
     if cat_filter and cat_filter in CATEGORIES:
@@ -31,27 +30,33 @@ async def gallery_index(request: Request, csrf_token: str = Depends(issue_csrf))
     else:
         images = gallery_svc.get_all_images()
         cat_filter = None
-    return templates.TemplateResponse("gallery/index.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("gallery/index.html", {
         "request": request,
         "user": user,
         "active": "gallery",
         "images": images,
         "categories": CATEGORIES,
         "cat_filter": cat_filter,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.get("/gallery/upload", response_class=HTMLResponse)
-async def gallery_upload_get(request: Request, user=Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
-    return templates.TemplateResponse("gallery/upload.html", {
+async def gallery_upload_get(request: Request, user=Depends(require_admin)):
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("gallery/upload.html", {
         "request": request,
         "user": user,
         "active": "gallery_upload",
         "categories": CATEGORIES,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
         "errors": {},
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/gallery/upload")

@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
 from app.auth import get_current_user
+from app.routes.admin import router as admin_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.blog import router as blog_router
 from app.routes.gallery import router as gallery_router
@@ -18,6 +19,7 @@ from app.templates_config import templates
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/art", StaticFiles(directory="data/images"), name="art")
+app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(blog_router)
 app.include_router(gallery_router)

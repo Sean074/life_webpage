@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Two-Factor Authentication — Sean O'Meara{% endblock %}
+
+{% block content %}
+<h1>Two-Factor Authentication</h1>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+<p>Enter the 6-digit code from your authenticator app.</p>
+<form method="post" action="/login/2fa" style="max-width: 360px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="form-row">
+    <label for="code">Authentication code</label>
+    <input type="text" id="code" name="code" required
+           inputmode="numeric" pattern="\d{6}" maxlength="6"
+           autocomplete="one-time-code" autofocus>
+  </div>
+  <button type="submit" class="btn btn-primary">Verify</button>
+</form>
+{% endblock %}

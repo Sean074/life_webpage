@@ -1,9 +1,11 @@
 from datetime import date, timedelta
 
+import secrets
+
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
+from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, require_auth, verify_csrf
 from app.models import expenses as expenses_model
 from app.services import expenses as expenses_svc
 from app.templates_config import templates
@@ -23,12 +25,13 @@ def _month_label(months_ago: int) -> str:
 
 
 @router.get("", response_class=HTMLResponse)
-async def expenses_index(request: Request, user: dict = Depends(require_auth), csrf_token: str = Depends(issue_csrf)):
-    return templates.TemplateResponse("expenses/index.html", {
+async def expenses_index(request: Request, user: dict = Depends(require_auth)):
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("expenses/index.html", {
         "request": request,
         "user": user,
         "active": "expenses",
-        "csrf_token": csrf_token,
+        "csrf_token": token,
         "today": date.today().isoformat(),
         "transactions": expenses_model.get_transactions(),
         "categories": expenses_model.get_categories(),
@@ -39,6 +42,8 @@ async def expenses_index(request: Request, user: dict = Depends(require_auth), c
         "cat_totals": expenses_model.get_category_totals(),
         "bank_options": list(expenses_svc.PARSERS.keys()),
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/transactions")

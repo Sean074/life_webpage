@@ -1,9 +1,11 @@
 from datetime import date
 
+import secrets
+
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
+from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, require_auth, verify_csrf
 from app.models import health as health_model
 from app.templates_config import templates
 
@@ -13,12 +15,12 @@ router = APIRouter(prefix="/health")
 
 
 @router.get("", response_class=HTMLResponse)
-async def health_index(request: Request, user: dict = Depends(require_auth), csrf_token: str = Depends(issue_csrf)):
+async def health_index(request: Request, user: dict = Depends(require_auth)):
     records = health_model.get_records()
     weekly = health_model.get_weekly_averages()
     summary = health_model.get_recent_summary(days=7)
-
-    return templates.TemplateResponse("health/index.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("health/index.html", {
         "request": request,
         "user": user,
         "active": "health",
@@ -26,8 +28,10 @@ async def health_index(request: Request, user: dict = Depends(require_auth), csr
         "weekly": weekly,
         "summary": summary,
         "today": date.today().isoformat(),
-        "csrf_token": csrf_token,
+        "csrf_token": token,
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/records")

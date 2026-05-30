@@ -42,10 +42,10 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 - [x] **Central CSRF dependency**
   - Replace the 12+ copies of `secrets.compare_digest(csrf_token, cookie_csrf)` with a single `verify_csrf` dependency
   - Single point of token *issuance* on GET routes too (currently scattered, inconsistently cleared)
-- [ ] **Production env**
+- [x] **Production env**
   - Set `HTTPS_ONLY=true` in the Dokploy environment tab (separate from `.env.example`)
   - Confirm `SECRET_KEY` is a fresh `python -c "import secrets; print(secrets.token_hex(32))"` value, not copied from anywhere
-- [ ] **2FA (TOTP) on admin login**
+- [x] **2FA (TOTP) on admin login**
   - `pyotp` for code generation/verification; QR code via `qrcode` library (both server-side, no JS)
   - Enrollment flow: admin scans QR with Authenticator / 1Password / Bitwarden, confirms with a code, secret stored on the user row
   - Login flow: after password verifies, prompt for 6-digit code; lock account after N bad codes (reuse the existing rate-limit pattern)

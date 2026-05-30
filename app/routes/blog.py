@@ -9,7 +9,6 @@ from app.auth import (
     CSRF_COOKIE_NAME,
     _CSRF_COOKIE_KWARGS,
     get_current_user,
-    issue_csrf,
     require_admin,
     require_auth,
     verify_csrf,
@@ -43,14 +42,17 @@ async def blog_index(request: Request):
 
 
 @router.get("/blog/new", response_class=HTMLResponse)
-async def blog_new_get(request: Request, user=Depends(require_auth), csrf_token: str = Depends(issue_csrf)):
-    return templates.TemplateResponse("blog/new.html", {
+async def blog_new_get(request: Request, user=Depends(require_auth)):
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("blog/new.html", {
         "request": request,
         "user": user,
         "active": "blog",
-        "csrf_token": csrf_token,
+        "csrf_token": token,
         "errors": {},
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/blog/new")
@@ -93,18 +95,21 @@ async def blog_new_post(
 
 
 @router.get("/blog/{slug}/edit", response_class=HTMLResponse)
-async def blog_edit_get(slug: str, request: Request, user=Depends(require_admin), csrf_token: str = Depends(issue_csrf)):
+async def blog_edit_get(slug: str, request: Request, user=Depends(require_admin)):
     post = blog_svc.get_post_raw(slug)
     if post is None:
         return RedirectResponse("/blog", status_code=303)
-    return templates.TemplateResponse("blog/edit.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("blog/edit.html", {
         "request": request,
         "user": user,
         "active": "blog",
         "post": post,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
         "errors": {},
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/blog/{slug}/edit")
@@ -158,7 +163,7 @@ async def blog_delete_post(
 
 
 @router.get("/blog/{slug}", response_class=HTMLResponse)
-async def blog_post(slug: str, request: Request, csrf_token: str = Depends(issue_csrf)):
+async def blog_post(slug: str, request: Request):
     user = get_current_user(request)
     post = blog_svc.get_post(slug)
     if post is None:
@@ -168,10 +173,13 @@ async def blog_post(slug: str, request: Request, csrf_token: str = Depends(issue
             "active": "blog",
             "post": None,
         }, status_code=404)
-    return templates.TemplateResponse("blog/post.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("blog/post.html", {
         "request": request,
         "user": user,
         "active": "blog",
         "post": post,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp

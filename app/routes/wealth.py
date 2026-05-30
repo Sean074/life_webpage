@@ -1,9 +1,11 @@
 from datetime import date
 
+import secrets
+
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.auth import issue_csrf, require_admin, require_auth, verify_csrf
+from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, require_auth, verify_csrf
 from app.models import wealth as wealth_model
 from app.services import wealth as wealth_svc
 from app.templates_config import templates
@@ -17,15 +19,15 @@ ACCOUNT_TYPES = ["savings", "investment", "retirement", "property", "liability"]
 
 
 @router.get("", response_class=HTMLResponse)
-async def wealth_index(request: Request, user: dict = Depends(require_auth), csrf_token: str = Depends(issue_csrf)):
+async def wealth_index(request: Request, user: dict = Depends(require_auth)):
     accounts = wealth_model.get_accounts()
     params = wealth_model.get_projection_params()
     history = wealth_svc.load_history()
     net_worth = wealth_svc.current_net_worth(accounts)
     projection = wealth_svc.run_projection(params, net_worth)
     backward_projection = wealth_svc.run_backward_projection(params, net_worth)
-
-    return templates.TemplateResponse("wealth/index.html", {
+    token = secrets.token_hex(16)
+    resp = templates.TemplateResponse("wealth/index.html", {
         "request": request,
         "user": user,
         "active": "wealth",
@@ -36,9 +38,11 @@ async def wealth_index(request: Request, user: dict = Depends(require_auth), csr
         "projection": projection,
         "backward_projection": backward_projection,
         "account_types": ACCOUNT_TYPES,
-        "csrf_token": csrf_token,
+        "csrf_token": token,
         "today": date.today().isoformat(),
     })
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
 
 
 @router.post("/accounts/bulk-update")

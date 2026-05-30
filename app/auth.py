@@ -93,6 +93,36 @@ def require_admin(user: dict = Depends(require_auth)) -> dict:
     return user
 
 
+PENDING_2FA_COOKIE = "pending_2fa"
+PENDING_2FA_MAX_AGE = 300  # 5 minutes
+
+
+def create_pending_2fa(response: Response, user_id: int) -> None:
+    token = _signer().sign(f"2fa:{user_id}").decode()
+    secure = os.environ.get("HTTPS_ONLY", "false").lower() == "true"
+    response.set_cookie(
+        PENDING_2FA_COOKIE,
+        token,
+        max_age=PENDING_2FA_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        secure=secure,
+    )
+
+
+def verify_pending_2fa(request: Request) -> Optional[int]:
+    token = request.cookies.get(PENDING_2FA_COOKIE)
+    if not token:
+        return None
+    try:
+        data = _signer().unsign(token, max_age=PENDING_2FA_MAX_AGE).decode()
+        if not data.startswith("2fa:"):
+            return None
+        return int(data[4:])
+    except (BadSignature, SignatureExpired, ValueError):
+        return None
+
+
 CSRF_COOKIE_NAME = "csrf_token"
 _CSRF_COOKIE_KWARGS: dict = {"httponly": False, "samesite": "lax"}
 

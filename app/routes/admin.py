@@ -1,0 +1,154 @@
+import base64
+import io
+import secrets
+import sqlite3
+import os
+from typing import Optional
+
+import pyotp
+import qrcode
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import RedirectResponse
+
+from app.auth import (
+    CSRF_COOKIE_NAME,
+    _CSRF_COOKIE_KWARGS,
+    require_admin,
+    verify_csrf,
+    verify_password,
+)
+from app.templates_config import templates
+
+router = APIRouter()
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "library.db")
+
+
+def _totp_qr_b64(username: str, secret: str) -> str:
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(name=username, issuer_name="Life")
+    qr = qrcode.QRCode(border=1)
+    qr.add_data(uri)
+    qr.make(fit=True)
+    buf = io.BytesIO()
+    qr.make_image(fill_color="black", back_color="white").save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+def _get_full_user(user_id: int) -> Optional[dict]:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            "SELECT id, username, password_hash, role, totp_secret, totp_enabled FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+    finally:
+        conn.close()
+    return dict(row) if row else None
+
+
+def _account_response(request, user, full_user, token, message=None, error=None, status_code=200):
+    qr_b64 = None
+    if full_user["totp_secret"] and not full_user["totp_enabled"]:
+        qr_b64 = _totp_qr_b64(user["username"], full_user["totp_secret"])
+    resp = templates.TemplateResponse("admin/account.html", {
+        "request": request,
+        "user": user,
+        "active": "account",
+        "csrf_token": token,
+        "totp_enabled": bool(full_user["totp_enabled"]),
+        "totp_pending": bool(full_user["totp_secret"] and not full_user["totp_enabled"]),
+        "totp_secret": full_user["totp_secret"],
+        "qr_b64": qr_b64,
+        "message": message,
+        "error": error,
+    }, status_code=status_code)
+    resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
+    return resp
+
+
+@router.get("/admin/account")
+async def account_get(request: Request, user: dict = Depends(require_admin)):
+    full_user = _get_full_user(user["id"])
+    token = secrets.token_hex(16)
+    return _account_response(request, user, full_user, token)
+
+
+@router.post("/admin/account/2fa/setup")
+async def account_2fa_setup(
+    request: Request,
+    user: dict = Depends(require_admin),
+    _csrf: None = Depends(verify_csrf),
+):
+    secret = pyotp.random_base32()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            "UPDATE users SET totp_secret = ?, totp_enabled = 0 WHERE id = ?",
+            (secret, user["id"]),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    token = secrets.token_hex(16)
+    full_user = _get_full_user(user["id"])
+    return _account_response(request, user, full_user, token)
+
+
+@router.post("/admin/account/2fa/confirm")
+async def account_2fa_confirm(
+    request: Request,
+    user: dict = Depends(require_admin),
+    code: str = Form(...),
+    _csrf: None = Depends(verify_csrf),
+):
+    full_user = _get_full_user(user["id"])
+    if not full_user["totp_secret"]:
+        return RedirectResponse("/admin/account", status_code=303)
+
+    if not pyotp.TOTP(full_user["totp_secret"]).verify(code.strip()):
+        token = secrets.token_hex(16)
+        return _account_response(
+            request, user, full_user, token,
+            error="! Invalid code. Check your authenticator app and try again.",
+            status_code=400,
+        )
+
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute("UPDATE users SET totp_enabled = 1 WHERE id = ?", (user["id"],))
+        conn.commit()
+    finally:
+        conn.close()
+
+    return RedirectResponse("/admin/account?message=2fa_enabled", status_code=303)
+
+
+@router.post("/admin/account/2fa/disable")
+async def account_2fa_disable(
+    request: Request,
+    user: dict = Depends(require_admin),
+    password: str = Form(...),
+    _csrf: None = Depends(verify_csrf),
+):
+    full_user = _get_full_user(user["id"])
+    if not verify_password(password, full_user["password_hash"]):
+        token = secrets.token_hex(16)
+        return _account_response(
+            request, user, full_user, token,
+            error="! Incorrect password.",
+            status_code=400,
+        )
+
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            "UPDATE users SET totp_secret = NULL, totp_enabled = 0 WHERE id = ?",
+            (user["id"],),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return RedirectResponse("/admin/account?message=2fa_disabled", status_code=303)

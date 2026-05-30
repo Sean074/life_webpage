@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Account — Sean O'Meara{% endblock %}
+
+{% block content %}
+<h1>Account</h1>
+
+{% if request.query_params.get('message') == '2fa_enabled' %}
+<p class="success">Two-factor authentication enabled.</p>
+{% elif request.query_params.get('message') == '2fa_disabled' %}
+<p class="success">Two-factor authentication disabled.</p>
+{% endif %}
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<section style="max-width: 480px;">
+  <h2>Two-Factor Authentication</h2>
+
+  {% if totp_enabled %}
+  <p>Status: <strong>Enabled</strong></p>
+  <form method="post" action="/admin/account/2fa/disable">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-row">
+      <label for="password">Confirm current password to disable</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">Disable 2FA</button>
+  </form>
+
+  {% elif totp_pending %}
+  <p>Status: <strong>Setup in progress</strong></p>
+  <p>Scan the QR code with your authenticator app (1Password, Bitwarden, Google Authenticator, etc.), then enter the 6-digit code to confirm.</p>
+  <img src="data:image/png;base64,{{ qr_b64 }}" alt="TOTP QR code" style="display:block;margin:1rem 0;width:200px;height:200px;">
+  <p>Manual entry key: <code>{{ totp_secret }}</code></p>
+  <form method="post" action="/admin/account/2fa/confirm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-row">
+      <label for="code">Authentication code</label>
+      <input type="text" id="code" name="code" required
+             inputmode="numeric" pattern="\d{6}" maxlength="6"
+             autocomplete="one-time-code" autofocus>
+    </div>
+    <button type="submit" class="btn btn-primary">Confirm and enable</button>
+  </form>
+
+  {% else %}
+  <p>Status: <strong>Not enabled</strong></p>
+  <form method="post" action="/admin/account/2fa/setup">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="btn btn-primary">Enable 2FA</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}
