@@ -64,16 +64,16 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - Replace `Pillow>=11.0.0` with an exact version
   - Consider `pip-compile` to generate a full `requirements.lock`
   - Rebuild reproducibility is a prerequisite for blaming bugs on code vs. environment
-- [ ] **Verify Markdown sanitization**
+- [x] **Verify Markdown sanitization**
   - Confirm `bleach` is actually used in `app/services/blog.py` when rendering Markdown to HTML
   - If not, wire it in — otherwise XSS via post body
-- [ ] **Verify gallery upload validation**
+- [x] **Verify gallery upload validation**
   - `app/services/gallery.py` `save_image` must check:
     - File extension allowlist
     - Magic-byte check (Pillow open as image)
     - Max file size and max image dimensions
   - Reject everything else with a 422
-- [ ] **Strip EXIF on gallery upload**
+- [x] **Strip EXIF on gallery upload**
   - In `save_image` (and the same path used by `rotate_image`), re-encode the image without EXIF metadata before writing to disk
   - Pillow one-liner: open → `Image.new(img.mode, img.size)` + `paste` (or `img.getdata()` round-trip) → save without `exif=` kwarg
   - Apply to thumbnail generation too

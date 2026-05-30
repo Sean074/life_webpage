@@ -10,6 +10,8 @@ IMAGES_ROOT = Path(__file__).parent.parent.parent / "data" / "images"
 THUMB_SIZE = (400, 400)
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 CATEGORIES = ["drawings", "paintings", "photography"]
+MAX_FILE_BYTES = 20 * 1024 * 1024
+MAX_IMAGE_DIMENSION = 10_000
 
 
 def image_url(category: str, filename: str) -> str:
@@ -50,6 +52,26 @@ def save_image(file_bytes: bytes, original_filename: str, category: str, title: 
     if category not in CATEGORIES:
         raise ValueError(f"Unknown category: {category}")
 
+    if len(file_bytes) > MAX_FILE_BYTES:
+        raise ValueError(f"File exceeds the {MAX_FILE_BYTES // (1024 * 1024)} MB limit.")
+
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            img_width, img_height = img.size
+            fmt = img.format
+            img = ImageOps.exif_transpose(img)
+            buf = io.BytesIO()
+            save_kwargs: dict = {"format": fmt}
+            if fmt in ("JPEG", "WEBP"):
+                save_kwargs["quality"] = 95
+            img.save(buf, **save_kwargs)
+            clean_bytes = buf.getvalue()
+    except Exception:
+        raise ValueError("File is not a valid image.")
+
+    if img_width > MAX_IMAGE_DIMENSION or img_height > MAX_IMAGE_DIMENSION:
+        raise ValueError(f"Image dimensions must not exceed {MAX_IMAGE_DIMENSION} px per side.")
+
     cat_dir = IMAGES_ROOT / category
     cat_dir.mkdir(parents=True, exist_ok=True)
 
@@ -64,7 +86,7 @@ def save_image(file_bytes: bytes, original_filename: str, category: str, title: 
         dest = cat_dir / filename
         counter += 1
 
-    dest.write_bytes(file_bytes)
+    dest.write_bytes(clean_bytes)
 
     thumb_path = IMAGES_ROOT / "thumbs" / category / filename
     _make_thumb(dest, thumb_path)
