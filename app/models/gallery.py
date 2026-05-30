@@ -11,25 +11,6 @@ def _connect():
     return conn
 
 
-def init_db():
-    with _connect() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS gallery_images (
-                id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                category    TEXT NOT NULL,
-                filename    TEXT NOT NULL,
-                title       TEXT NOT NULL DEFAULT '',
-                uploaded_at TEXT NOT NULL DEFAULT (date('now')),
-                rotation    INTEGER NOT NULL DEFAULT 0
-            )
-        """)
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_gallery_images_category ON gallery_images (category)"
-        )
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_gallery_images_uploaded ON gallery_images (uploaded_at)"
-        )
-
 
 def get_all_images() -> list[dict]:
     with _connect() as conn:

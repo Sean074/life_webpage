@@ -1,193 +1,147 @@
 # Life — Path to v1
 
-Phased plan from the 2026-05-28 design review. Items are roughly ordered for value within each phase.
+Updated 2026-05-29 after the second design review. Closed items removed; new items added; critical-path items flagged.
 
 ---
 
-## Phase 0 — Unbreak deployment
+## ⚠️ Critical — next session
 
-**Goal:** A first deploy that actually works end-to-end. Do all of these before pointing a domain at the VPS.
+These are blockers for a working deploy. The codebase is in a half-finished DB consolidation: schema lives in `app.db` but pieces of the application still read from the legacy per-domain files. Until these land, login fails, transactions land in orphan DBs, and `/healthz` 500s on a fresh container.
 
-- [x] **Fix `.env.example`**
-  - Blank out `SECRET_KEY` (currently ships a real-looking placeholder)
-  - Set `HTTPS_ONLY=false` for local dev (current `true` silently breaks local login on plain http)
-  - Add a comment that production must override `HTTPS_ONLY=true` via Dokploy env tab
-- [x] **Write `scripts/init_db.sh`**
-  - Maps each migration to its correct DB file:
-    - `001_library.sql`, `002_users.sql` → `library.db`
-    - `003_gallery.sql`, `004_gallery_rotation.sql` → `gallery.db`
-    - `005_wealth.sql` → `wealth.db`
-    - `006_health.sql` → `health.db`
-    - `007_expenses.sql` → `expenses.db`
-  - Idempotent — safe to re-run
-  - Replace the broken `for f in migrations/*.sql; do sqlite3 data/expenses.db ...` loop in `docs/deploy.md` Step 7 with a call to this script
-  - Update README Section 4 to call this script instead of two hand-rolled `sqlite3` invocations
-- [x] **Reconcile `CLAUDE.md` with reality**
-  - Replace Hetzner CX22 / systemd / nginx as primary with Hostinger / Dokploy / Traefik
-  - Keep Hetzner as the "legacy" section, matching `docs/deploy.md`
-- [x] **Local Docker dry-run**
-  - `docker build -t life .`
-  - `docker run -p 8000:8000 -v $(pwd)/data:/app/data --env-file .env life`
+- [x] **⚠️ Repoint `app/auth.py` at `app.db`**
+  - [app/auth.py:11](app/auth.py:11) — `DB_PATH = Path(__file__).parent.parent / "data" / "library.db"` is still the legacy path
+  - Change to `... / "data" / "app.db"`
+  - Without this, the entire auth layer reads users from a file that `init_db.sh` no longer populates
+- [x] **⚠️ Repoint route-level DB paths**
+  - [app/routes/auth_routes.py:16](app/routes/auth_routes.py:16) — `os.path.join(..., "library.db")` → `app.db`
+  - `app/routes/admin.py` — same audit (referenced in Phase 2.5 hygiene)
+  - Use `Path(__file__).parent.parent.parent / "data" / "app.db"` to match the model layer
+- [x] **⚠️ Verify every `app/models/*.py` reads from `app.db`**
+  - Phase 2.5 standardization implies models are consistent, but worth grepping: `grep -r "library.db\|gallery.db\|wealth.db\|health.db\|expenses.db" app/`
+  - Anything that surfaces is a bug
+- [x] **⚠️ Audit the per-domain `init_db()` calls in `main.py` startup**
+  - [app/main.py:31-36](app/main.py:31-36) calls `expenses_model.init_db()`, `health_model.init_db()`, `gallery_init_db()`, `wealth_model.init_db()`
+  - If any of those still create tables in their old per-domain file, every container restart resurrects empty legacy DBs alongside `app.db`
+  - Either delete the calls (since `init_db.sh` now owns schema for `app.db`) or confirm each one is now a no-op against the consolidated DB
+- [ ] **⚠️ Run `scripts/migrate_to_app_db.py` against the real data once**
+  - The migration script exists but row-level copy has to actually happen before the rename-to-`.bak` step
+  - Verify counts before and after; spot-check Expenses + Wealth
+  - Phase 2.5 has "Decide fate of migrate_to_app_db.py" — that decision is "run it, then delete"
+- [ ] **⚠️ Local Docker dry-run end-to-end** (gate for all of the above)
+  - `docker build` (uses updated `requirements.lock`)
+  - `docker run` with mounted volume
   - Run `init_db.sh` inside the container
-  - Create an admin user, log in, write a blog post, upload an image
-  - `docker restart` the container and verify data survived
-  - Only after this passes — provision the Hostinger VPS
+  - Create admin user, log in, write a post, upload an image, edit a wealth account
+  - `docker restart` — verify data survived and no orphan `.db` files appeared
+  - Until this passes, do not deploy
+- [ ] **⚠️ Chain `init_db.sh` before `uvicorn` in container `CMD`**
+  - `/healthz` opens `data/app.db?mode=ro`; on a fresh container before init, the file doesn't exist and the probe returns 500
+  - Dokploy will refuse to mark the container healthy and may restart-loop
+  - Options: change Dockerfile `CMD` to `bash -c "bash scripts/init_db.sh && uvicorn ..."`, or split into a one-shot init container, or relax `/healthz` to distinguish "DB missing" (503) from "DB unreachable" (500)
+- [ ] **⚠️ Verify `backup.sh` is actually scheduled**
+  - The script is correct; nothing in the repo wires it to a schedule
+  - On Dokploy: either a sidecar cron container, host cron on the VPS that `docker exec`s in, or a Dokploy scheduled task
+  - Verify by waiting 24h and confirming a timestamped directory appears under `/var/lib/dokploy/volumes/life-data/backups/`
+- [ ] **⚠️ Verify 2FA login flow actually challenges for TOTP**
+  - Migration 008 added `totp_secret` + `totp_enabled`; admin router was added; but trace `POST /login` end-to-end — when `totp_enabled=1`, is the user actually prompted for a code before the session cookie is set?
+  - If schema is there but the challenge isn't enforced, 2FA is theatre
+- [ ] **Verify `.env` is not tracked by git**
+  - `git ls-files .env` should return empty
+  - If it lists `.env`, remove from index AND rotate `SECRET_KEY` (history is now public)
 
 ---
 
-## Phase 1 — Security & operability
+## Phase 1 — Security & operability (remaining)
 
-**Goal:** Hardening required before exposing the app to the public internet.
-
-- [x] **Central CSRF dependency**
-  - Replace the 12+ copies of `secrets.compare_digest(csrf_token, cookie_csrf)` with a single `verify_csrf` dependency
-  - Single point of token *issuance* on GET routes too (currently scattered, inconsistently cleared)
-- [x] **Production env**
-  - Set `HTTPS_ONLY=true` in the Dokploy environment tab (separate from `.env.example`)
-  - Confirm `SECRET_KEY` is a fresh `python -c "import secrets; print(secrets.token_hex(32))"` value, not copied from anywhere
-- [x] **2FA (TOTP) on admin login**
-  - `pyotp` for code generation/verification; QR code via `qrcode` library (both server-side, no JS)
-  - Enrollment flow: admin scans QR with Authenticator / 1Password / Bitwarden, confirms with a code, secret stored on the user row
-  - Login flow: after password verifies, prompt for 6-digit code; lock account after N bad codes (reuse the existing rate-limit pattern)
-  - Add a `2fa_secret` column to `users`; nullable so `role=user` accounts can stay password-only
-  - **Rationale:** Expenses + Wealth hold real financial data — a leaked admin password should not be enough to read or alter the ledger
-- [x] **Admin account page (`/admin/account`)**
-  - Change-password form: current password + new password + confirm new password
-  - Re-verify current password before accepting the change; never trust session alone for security-critical mutations
-  - On success, invalidate other sessions (rotate `SECRET_KEY`-derived signing or bump a per-user session version) so a stolen cookie can't survive the rotation
-  - Also surfaces 2FA enrollment / re-enrollment from the same page
-  - **Rationale:** currently `scripts/create_user.py` is the only way to rotate a password — requires SSHing into the container, which is enough friction that rotations get delayed
-- [x] **`GET /healthz` endpoint**
-  - Opens a DB connection, returns `{"ok": true}`
-  - Wire into Dokploy / Traefik healthcheck so a hung container is detected
-- [x] **Pin dependencies**
-  - Replace `Pillow>=11.0.0` with an exact version
-  - Consider `pip-compile` to generate a full `requirements.lock`
-  - Rebuild reproducibility is a prerequisite for blaming bugs on code vs. environment
-- [x] **Verify Markdown sanitization**
-  - Confirm `bleach` is actually used in `app/services/blog.py` when rendering Markdown to HTML
-  - If not, wire it in — otherwise XSS via post body
-- [x] **Verify gallery upload validation**
-  - `app/services/gallery.py` `save_image` must check:
-    - File extension allowlist
-    - Magic-byte check (Pillow open as image)
-    - Max file size and max image dimensions
-  - Reject everything else with a 422
-- [x] **Strip EXIF on gallery upload**
-  - In `save_image` (and the same path used by `rotate_image`), re-encode the image without EXIF metadata before writing to disk
-  - Pillow one-liner: open → `Image.new(img.mode, img.size)` + `paste` (or `img.getdata()` round-trip) → save without `exif=` kwarg
-  - Apply to thumbnail generation too
-  - **Rationale:** phone photos carry GPS coordinates, camera serial, and timestamps — publishing a photo of a painting should not also publish your home address
-- [x] **Nightly backups**
-  - Cron on the VPS: `sqlite3 <db> ".backup '<dest>'"` for each DB (online backup — safe while DB is being written)
-  - Destination: `/var/lib/dokploy/volumes/life-data/backups/YYYY-MM-DD/`
-  - 7-day rotation
-  - Weekly off-server `rsync` to laptop
-  - **Plain `cp` of a live SQLite file is not safe — do not use it**
-- [x] **Custom 404 / 500 templates**
-  - Match the visual style standard
-  - Stop leaking FastAPI's default JSON error responses
-- [x] **Fix `POST /blog/<slug>/delete`** ([app/routes/blog.py:174](app/routes/blog.py:174))
-  - Currently silently no-ops on CSRF mismatch — should return 400
-- [x] **Move `init_db()` calls out of module import**
-  - Currently called at import time in [routes/expenses.py:12](app/routes/expenses.py:12), [routes/health.py:11](app/routes/health.py:11), [routes/gallery.py:11](app/routes/gallery.py:11), [routes/wealth.py:12](app/routes/wealth.py:12)
-  - Move to a single FastAPI `startup` event in `app/main.py`
+- [ ] **Production env in Dokploy**
+  - Set `HTTPS_ONLY=true` in the Dokploy environment tab
+  - Confirm `SECRET_KEY` is fresh, not copied from `.env`
+- [ ] **Validate `session_version` in `get_current_user`**
+  - Migration 009 added the column; the admin password-change route presumably bumps it
+  - Verify the auth layer actually compares the cookie's session-version claim against the user row — otherwise a stolen cookie still survives a password rotation
+- [ ] **Reconcile `requirements.txt`**
+  - Lock + Dockerfile are now the source of truth; `requirements.txt` is a stale third copy
+  - Either delete `requirements.txt` and update README's `pip install -r requirements.txt` line, or auto-generate it from the lock — pick one
+- [ ] **Narrow CSV-import exception catch** ([app/routes/expenses.py:113](app/routes/expenses.py:113))
+  - Currently catches bare `Exception` and reports "Import failed: check file format"
+  - Narrow to the parser-level errors; let real bugs surface
 
 ---
 
 ## Phase 2 — Data correctness
 
-**Goal:** Trust the numbers. Do before relying on Expenses/Wealth for real decisions.
-
-- [x] **Consolidate to a single `app.db`**
-  - One schema, one backup, one migration target
-  - Removes the cross-DB migration confusion that caused Phase 0's broken deploy command
-  - Migration script: copy tables out of each old DB into the new one, verify row counts, swap
 - [ ] **Blog slug uniqueness**
   - Check before insert; reject on collision with 422 + error message
-  - Currently can silently overwrite an existing post
 - [ ] **CSV-import calibration**
   - Real export from each bank you actually use
   - One unit test per parser using a redacted real CSV
-  - Catches the inevitable "dates are in a different format this month" failure mode
 - [ ] **Wealth projection regression test**
   - One scenario with known inputs and hand-computed expected outputs
   - These numbers inform real financial decisions — they need to be auditable
 - [ ] **Rate-limit dict prune** ([app/routes/auth_routes.py:19](app/routes/auth_routes.py:19))
   - Periodic sweep to drop empty entries
-  - Minor — not a blocker, but easy
 - [ ] **Data export (admin)**
   - CSV + JSON download endpoints for Expenses, Wealth (accounts + history), and Health
   - Mount under `/admin/export/<area>.<format>`, behind `require_admin`
-  - One handler per area; let the model layer return the rows, the route serializes
-  - **Rationale:** data ownership — if you ever leave this app, walk out with everything. Also unblocks ad-hoc spreadsheet analysis.
+  - **Rationale:** data ownership — if you ever leave this app, walk out with everything
 - [ ] **Server-side code syntax highlighting in blog posts**
   - Enable the `codehilite` extension in the existing `markdown` pipeline (`app/services/blog.py`)
-  - Add a Pygments stylesheet to the static CSS bundle (pick one that matches the monochrome aesthetic — `bw` or `friendly` inverted)
-  - No client-side JS; rendering stays server-side
-  - Sanity-check that `bleach` (once wired per Phase 1) allows the `<span class="...">` tags Pygments emits
+  - Add a Pygments stylesheet to the static CSS bundle (`bw` or `friendly` inverted for the monochrome aesthetic)
+  - Add `<span class="...">` and the highlight `<div>`/`<pre>` classes to the `bleach` allowlist in `services/blog.py` so highlighted output survives sanitization
 - [ ] **Static `/contact` page**
-  - `mailto:` link to a dedicated alias (e.g. `sean+site@gmail.com` or `contact@yourdomain.com`) — not your primary address, so it can be rotated if spam picks up
-  - Optional: LinkedIn / GitHub / other professional links on the same page
+  - `mailto:` link to a dedicated alias (e.g. `sean+site@gmail.com` or `contact@yourdomain.com`)
+  - LinkedIn / GitHub / professional links on the same page
   - Add to public nav alongside Blog and Gallery
-  - **No form** — avoids SMTP credentials, honeypot/rate-limit code, and another public POST endpoint (see 2026-05-28 discussion)
+  - **No form** — avoids SMTP credentials, honeypot/rate-limit code, and another public POST endpoint
 
 ---
 
-## Phase 2.5 — Code Hygiene
+## Phase 2.5 — Code hygiene
 
 **Goal:** Remove accumulated dead code and inconsistencies before the codebase grows further. None of these change behaviour — they make the next phase easier to navigate.
 
 ### Dead code removal
 
 - [ ] **Remove unused imports**
-  - `RedirectResponse` from `app/auth.py:9` (never used in that file)
+  - `RedirectResponse` from `app/auth.py:9`
   - `timedelta` from `app/routes/expenses.py:1`
 - [ ] **Remove `all_categories`**
   - Remove the import from `app/routes/gallery.py:14`
-  - Delete the `all_categories()` function from `app/models/gallery.py` (nothing calls it)
+  - Delete the `all_categories()` function from `app/models/gallery.py`
 - [ ] **Remove dead model functions**
-  - `get_account()` from `app/models/wealth.py:41` — `get_accounts()` is used; this singular version is not
-  - `delete_item()` from `app/models/library.py:107` — no delete route for library items exists
-  - `generate_missing_thumbs()` from `app/services/gallery.py:144` — never called from routes or scripts
+  - `get_account()` from `app/models/wealth.py:41`
+  - `delete_item()` from `app/models/library.py:107`
+  - `generate_missing_thumbs()` from `app/services/gallery.py:144`
 - [ ] **Remove or wire up `issue_csrf()`** (`app/auth.py:133`)
-  - `issue_csrf()` is defined but never imported or called — all routes inline token generation instead
-  - Either delete it (if inline pattern is final) or replace the ~30 inline occurrences with a call to it
+  - Defined but never called — all routes inline token generation
+  - Either delete it or replace the ~30 inline occurrences with calls to it
+  - Pairs with the "central CSRF dependency" intent from Phase 1
 
 ### Pattern consistency
 
-- [ ] **Standardize model DB connections** to `with _connect() as conn:` (context manager)
-  - `app/models/expenses.py`, `app/models/wealth.py`, `app/models/health.py` use manual `try/finally conn.close()` instead
+- [ ] **Standardize model DB connections** to `with _connect() as conn:`
+  - `app/models/expenses.py`, `app/models/wealth.py`, `app/models/health.py` use manual `try/finally conn.close()`
   - `app/auth.py` also uses the try/finally pattern
 - [ ] **Add `PRAGMA foreign_keys = ON`** to `_connect()` in `expenses.py`, `wealth.py`, `health.py`
-  - Already enabled in `gallery.py` and `library.py`; missing from the rest
-- [ ] **Standardize `DB_PATH`** in `app/routes/auth_routes.py:28` and `app/routes/admin.py:26`
-  - Both use `os.path.join(os.path.dirname(...))` — should use `Path(__file__).parent... / "data" / "app.db"` to match all models
+- [ ] **Standardize `DB_PATH`** (note: this is the cleanup; the urgent app.db repoint is in the Critical section above)
 - [ ] **Fix CSRF cookie kwargs** in `app/routes/auth_routes.py` (6 occurrences)
   - Hardcodes `httponly=False, samesite="lax"` instead of `**_CSRF_COOKIE_KWARGS`
 - [ ] **Move inline `import logging`** in `app/routes/expenses.py:108` to top of file
 
 ### Route thinning
 
-- [ ] **Extract raw DB queries out of `auth_routes.py`**
-  - Routes open `sqlite3.connect(DB_PATH)` directly; move user lookups into `app/models/users.py` (new file) or `app/auth.py`
-- [ ] **Extract raw DB queries out of `admin.py`**
-  - Same issue — password change, 2FA enable/disable queries belong in model functions, not inline in route handlers
+- [ ] **Extract raw DB queries out of `auth_routes.py`** into `app/models/users.py` or `app/auth.py`
+- [ ] **Extract raw DB queries out of `admin.py`** — password change, 2FA enable/disable belong in model functions
 
 ### Stale file cleanup
 
 - [ ] **Archive or delete `docs/render_standard.md`**
-  - Describes Render deployment (now replaced by Dokploy/Hostinger); references old per-DB files (expenses.db, gallery.db, etc.) that no longer exist
-  - Either delete it or update to reflect current stack and single `app.db`
+  - References old per-DB files and Render deployment
 - [ ] **Fix `deployment_for_dummy.md` line 155**
   - Still has the old `for f in migrations/*.sql; do sqlite3 data/expenses.db...` loop; replace with `bash scripts/init_db.sh`
-- [ ] **Decide fate of `scripts/migrate_to_app_db.py`**
-  - One-time script to consolidate old per-DB files into `app.db`
-  - If the migration has been run: delete it (the job is done)
-  - If not yet run: run it, verify row counts, then delete it
+- [ ] **Delete `scripts/migrate_to_app_db.py`** once the Critical-section migration run is complete
 - [ ] **Archive Hetzner legacy scripts**
-  - `scripts/deploy.sh` and `scripts/server_setup.sh` are Hetzner-specific; Hostinger/Dokploy is primary
-  - Move to `docs/legacy/` with a deprecation comment, or delete if Hetzner is fully retired
+  - `scripts/deploy.sh` and `scripts/server_setup.sh` — move to `docs/legacy/` or delete
 
 ---
 
@@ -206,40 +160,30 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - Document and enforce: max file size, max image dimensions, what happens when storage fills
   - Add a `df` check or storage-quota guard before accepting uploads
 - [ ] **Gallery captions in lightbox**
-  - Surface the existing `image.title` field ([app/routes/gallery.py:61](app/routes/gallery.py:61)) as a single line of text below the lightbox `<img>` — short captions like "Oil on canvas: Master Copy Rembrandt" or "Glacier Peak Sunset"
-  - Also add `title="{{ image.title }}"` to the thumbnail `<img>` for a free native hover tooltip on desktop (mobile and screen readers ignore it gracefully)
-  - **Not** rendered under the thumbnail itself — keeps the grid visually restrained and works identically on mobile
+  - Surface the existing `image.title` field as a single line of text below the lightbox `<img>` — short captions like "Oil on canvas: Master Copy Rembrandt" or "Glacier Peak Sunset"
+  - Also add `title="{{ image.title }}"` to the thumbnail `<img>` for a free native hover tooltip on desktop
+  - **Not** rendered under the thumbnail itself — keeps the grid visually restrained
   - Audit existing rows and backfill missing titles via the edit flow
-  - **Rationale:** lightbox-only is the simplest implementation that works on both desktop and touch (see 2026-05-28 discussion)
 - [ ] **Uptime monitoring**
   - UptimeRobot (or equivalent) hitting `/healthz` every 5 minutes
   - Email/push alert on failure
 - [ ] **RSS feeds** (the site's only "follow" mechanism)
-  - `GET /blog/feed.xml` — Atom or RSS 2.0, last 20 published posts, full content (not just excerpts — there are no ads to gate behind clicks)
-  - `GET /gallery/feed.xml` — last 20 uploaded images, with title as the entry title and the thumbnail URL in `<enclosure>` or `<media:content>`
-  - Discoverable: `<link rel="alternate" type="application/rss+xml">` in `base.html` so reader apps auto-detect
-  - Link to both from the `/contact` page so readers can find them
-  - **Rationale (see 2026-05-28 discussion):** chosen instead of an email subscription system. RSS gives readers a way to follow with zero personal data collected, no SMTP infra, no sender reputation to manage, no unsubscribe/GDPR compliance burden, and the likely audience for this site already uses RSS readers.
+  - `GET /blog/feed.xml` — Atom or RSS 2.0, last 20 published posts, full content
+  - `GET /gallery/feed.xml` — last 20 uploaded images, title + thumbnail URL in `<enclosure>` or `<media:content>`
+  - `<link rel="alternate" type="application/rss+xml">` in `base.html` for auto-detect
+  - Link to both from the `/contact` page
 - [ ] **Year-in-review page** (admin only)
-  - `/admin/review/<year>` — auto-generated summary across Health and Expenses
-  - Health: totals and weekly-average trends for each tracked metric (meals cooked, exercise hours, drinks, art hours, read hours, TV hours) over the year
-  - Expenses: total spend, spend per month, top categories, biggest single-month deltas
-  - Wealth: net worth start vs. end, contribution breakdown if derivable
-  - Default to the prior calendar year; allow `/admin/review/<year>` for any year with data
-  - Server-side rendered (no JS), reuses the same chart style as the live pages
-  - **Rationale:** fits the reflective tone of the site; a once-a-year readout is more useful than constantly-visible streaks (which tend to distort the underlying behavior)
+  - `/admin/review/<year>` — auto-generated summary across Health, Expenses, and Wealth
+  - Default to the prior calendar year
+  - Server-side rendered (no JS)
 - [ ] **Private hit counters** (optional)
   - Server-side increment on `GET /blog/<slug>` and `GET /gallery` views
-  - One counter per post / per image; bot-filter by user-agent allowlist (real browsers only)
   - **Never displayed publicly** — viewable only on `/admin/stats` behind `require_admin`
-  - Rationale: gives you "did anyone read this" without a public state-modifying endpoint or social-media dynamics that pull your writing/art toward what gets clicks (see 2026-05-28 discussion — chosen over like/love/meh reactions)
   - Schema: single `views` table (`slug_or_image_id`, `kind`, `count`, `last_viewed`)
 
 ---
 
 ## Phase 4 — Once it's live
-
-**Goal:** Operational confidence.
 
 - [ ] **Restore drill**
   - Rebuild the VPS from scratch using only the Git repo + the latest backup
@@ -257,4 +201,5 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 - Email subscription / mailing list (see Phase 3 RSS — chosen instead, 2026-05-28)
 - Plaid / bank API integrations
 - Analytics, tracking pixels, third-party scripts
-- Hosting on the aviation-regs Mac Mini (incompatible threat models — see review, 2026-05-28)
+- Hosting on the aviation-regs Mac Mini (incompatible threat models — see review, 2026-05-28; confirmed 2026-05-29)
+- Like/love/meh reaction buttons (see 2026-05-28 — private hit counters chosen instead)

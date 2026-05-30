@@ -16,10 +16,6 @@ def _connect():
 def init_db():
     conn = _connect()
     conn.executescript(MIGRATION.read_text())
-    try:
-        conn.execute("ALTER TABLE health_records ADD COLUMN tv_hours REAL NOT NULL DEFAULT 0")
-    except Exception:
-        pass
     conn.commit()
     conn.close()
 

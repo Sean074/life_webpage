@@ -12,7 +12,6 @@ from app.auth import get_current_user
 from app.models import expenses as expenses_model
 from app.models import health as health_model
 from app.models import wealth as wealth_model
-from app.models.gallery import init_db as gallery_init_db
 from app.services import wealth as wealth_svc
 from app.routes.admin import router as admin_router
 from app.routes.auth_routes import router as auth_router
@@ -32,7 +31,6 @@ app = FastAPI()
 async def startup():
     expenses_model.init_db()
     health_model.init_db()
-    gallery_init_db()
     wealth_model.init_db(seed_accounts=wealth_svc.latest_accounts_from_csv())
 
 

@@ -1,0 +1,1 @@
+ALTER TABLE health_records ADD COLUMN tv_hours REAL NOT NULL DEFAULT 0;

@@ -31,4 +31,9 @@ if ! sqlite3 "$DB" "PRAGMA table_info(users);" | grep -q "session_version"; then
     sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/009_session_version.sql"
 fi
 
+# 010 uses ALTER TABLE ADD COLUMN — guard for idempotency
+if ! sqlite3 "$DB" "PRAGMA table_info(health_records);" | grep -q "tv_hours"; then
+    sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/010_health_tv_hours.sql"
+fi
+
 echo "Database initialisation complete."
