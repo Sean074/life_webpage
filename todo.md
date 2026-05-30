@@ -134,6 +134,63 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 
 ---
 
+## Phase 2.5 — Code Hygiene
+
+**Goal:** Remove accumulated dead code and inconsistencies before the codebase grows further. None of these change behaviour — they make the next phase easier to navigate.
+
+### Dead code removal
+
+- [ ] **Remove unused imports**
+  - `RedirectResponse` from `app/auth.py:9` (never used in that file)
+  - `timedelta` from `app/routes/expenses.py:1`
+- [ ] **Remove `all_categories`**
+  - Remove the import from `app/routes/gallery.py:14`
+  - Delete the `all_categories()` function from `app/models/gallery.py` (nothing calls it)
+- [ ] **Remove dead model functions**
+  - `get_account()` from `app/models/wealth.py:41` — `get_accounts()` is used; this singular version is not
+  - `delete_item()` from `app/models/library.py:107` — no delete route for library items exists
+  - `generate_missing_thumbs()` from `app/services/gallery.py:144` — never called from routes or scripts
+- [ ] **Remove or wire up `issue_csrf()`** (`app/auth.py:133`)
+  - `issue_csrf()` is defined but never imported or called — all routes inline token generation instead
+  - Either delete it (if inline pattern is final) or replace the ~30 inline occurrences with a call to it
+
+### Pattern consistency
+
+- [ ] **Standardize model DB connections** to `with _connect() as conn:` (context manager)
+  - `app/models/expenses.py`, `app/models/wealth.py`, `app/models/health.py` use manual `try/finally conn.close()` instead
+  - `app/auth.py` also uses the try/finally pattern
+- [ ] **Add `PRAGMA foreign_keys = ON`** to `_connect()` in `expenses.py`, `wealth.py`, `health.py`
+  - Already enabled in `gallery.py` and `library.py`; missing from the rest
+- [ ] **Standardize `DB_PATH`** in `app/routes/auth_routes.py:28` and `app/routes/admin.py:26`
+  - Both use `os.path.join(os.path.dirname(...))` — should use `Path(__file__).parent... / "data" / "app.db"` to match all models
+- [ ] **Fix CSRF cookie kwargs** in `app/routes/auth_routes.py` (6 occurrences)
+  - Hardcodes `httponly=False, samesite="lax"` instead of `**_CSRF_COOKIE_KWARGS`
+- [ ] **Move inline `import logging`** in `app/routes/expenses.py:108` to top of file
+
+### Route thinning
+
+- [ ] **Extract raw DB queries out of `auth_routes.py`**
+  - Routes open `sqlite3.connect(DB_PATH)` directly; move user lookups into `app/models/users.py` (new file) or `app/auth.py`
+- [ ] **Extract raw DB queries out of `admin.py`**
+  - Same issue — password change, 2FA enable/disable queries belong in model functions, not inline in route handlers
+
+### Stale file cleanup
+
+- [ ] **Archive or delete `docs/render_standard.md`**
+  - Describes Render deployment (now replaced by Dokploy/Hostinger); references old per-DB files (expenses.db, gallery.db, etc.) that no longer exist
+  - Either delete it or update to reflect current stack and single `app.db`
+- [ ] **Fix `deployment_for_dummy.md` line 155**
+  - Still has the old `for f in migrations/*.sql; do sqlite3 data/expenses.db...` loop; replace with `bash scripts/init_db.sh`
+- [ ] **Decide fate of `scripts/migrate_to_app_db.py`**
+  - One-time script to consolidate old per-DB files into `app.db`
+  - If the migration has been run: delete it (the job is done)
+  - If not yet run: run it, verify row counts, then delete it
+- [ ] **Archive Hetzner legacy scripts**
+  - `scripts/deploy.sh` and `scripts/server_setup.sh` are Hetzner-specific; Hostinger/Dokploy is primary
+  - Move to `docs/legacy/` with a deprecation comment, or delete if Hetzner is fully retired
+
+---
+
 ## Phase 3 — Usability
 
 **Goal:** The app is something you'd actually open daily.
