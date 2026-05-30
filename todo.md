@@ -46,12 +46,10 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - 8 codes per batch, format `xxxxx-xxxxx`, bcrypt-hashed, single-use. Generated on TOTP confirm; regeneratable from `/admin/account` (requires password).
   - Login path: `/login/2fa/recovery` — same rate-limit pocket as TOTP; consumes code on success.
   - New migration: `migrations/011_backup_codes.sql`. New template: `app/templates/login_recovery.html`.
-- [ ] **⚠️ Re-run local Docker dry-run after backup-codes change**
-  - The earlier dry-run (above) predates `011_backup_codes.sql` and the new `/login/2fa/recovery` routes
-  - Repeat: build → run → init_db → enable 2FA → confirm codes shown → log out → log back in via TOTP → log out → log in via a backup code → confirm `backup_codes_remaining` decremented → regenerate codes → confirm old codes rejected
-- [ ] **Verify `.env` is not tracked by git**
-  - `git ls-files .env` should return empty
-  - If it lists `.env`, remove from index AND rotate `SECRET_KEY` (history is now public)
+- [x] **⚠️ Re-run local Docker dry-run after backup-codes change**
+  - Passed 2026-05-30: built fresh image (after pinning `fastapi==0.128.8` + `starlette<1.0` in `requirements.in` to resolve the starlette 1.x `TemplateResponse` API break), enabled 2FA, confirmed 8 codes shown once, verified TOTP login, verified backup-code login, confirmed count decrements (8→7), regenerated codes and confirmed old codes rejected.
+- [x] **Verify `.env` is not tracked by git**
+  - Verified 2026-05-30: `git ls-files .env` returned empty. Safe.
 
 ---
 
@@ -66,6 +64,10 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
 - [ ] **Reconcile `requirements.txt`**
   - Lock + Dockerfile are now the source of truth; `requirements.txt` is a stale third copy
   - Either delete `requirements.txt` and update README's `pip install -r requirements.txt` line, or auto-generate it from the lock — pick one
+- [ ] **Migrate `templates.TemplateResponse` calls to starlette ≥1.0 API**
+  - Currently pinned to `starlette<1.0` in `requirements.in` because all 32 call sites use the deprecated signature `TemplateResponse("name.html", {"request": request, ...})`
+  - New signature is `TemplateResponse(request, "name.html", {...})` (request as first positional, dropped from context)
+  - Until done, cannot upgrade past fastapi 0.128.8 (Docker test 2026-05-30 confirmed: `TypeError: unhashable type: 'dict'` from Jinja2 cache lookup on every page)
 - [ ] **Narrow CSV-import exception catch** ([app/routes/expenses.py:113](app/routes/expenses.py:113))
   - Currently catches bare `Exception` and reports "Import failed: check file format"
   - Narrow to the parser-level errors; let real bugs surface
