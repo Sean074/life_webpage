@@ -25,4 +25,9 @@ if ! sqlite3 "$DATA_DIR/library.db" "PRAGMA table_info(users);" | grep -q "totp_
     sqlite3 "$DATA_DIR/library.db" < "$SCRIPT_DIR/../migrations/008_2fa.sql"
 fi
 
+# 009 uses ALTER TABLE ADD COLUMN — guard for idempotency
+if ! sqlite3 "$DATA_DIR/library.db" "PRAGMA table_info(users);" | grep -q "session_version"; then
+    sqlite3 "$DATA_DIR/library.db" < "$SCRIPT_DIR/../migrations/009_session_version.sql"
+fi
+
 echo "Database initialisation complete."

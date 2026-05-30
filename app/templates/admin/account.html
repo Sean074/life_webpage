@@ -5,18 +5,38 @@
 {% block content %}
 <h1>Account</h1>
 
-{% if request.query_params.get('message') == '2fa_enabled' %}
+{% if request.query_params.get('message') == 'password_changed' %}
+<p class="success">Password updated. Other sessions have been signed out.</p>
+{% elif request.query_params.get('message') == '2fa_enabled' %}
 <p class="success">Two-factor authentication enabled.</p>
 {% elif request.query_params.get('message') == '2fa_disabled' %}
 <p class="success">Two-factor authentication disabled.</p>
 {% endif %}
 
-{% if error %}
-<p class="error">{{ error }}</p>
-{% endif %}
+<section style="max-width: 480px; margin-bottom: 2rem;">
+  <h2>Password</h2>
+  {% if pw_error %}<p class="error">{{ pw_error }}</p>{% endif %}
+  <form method="post" action="/admin/account/password">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-row">
+      <label for="current_password">Current password</label>
+      <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
+    </div>
+    <div class="form-row">
+      <label for="new_password">New password</label>
+      <input type="password" id="new_password" name="new_password" required autocomplete="new-password">
+    </div>
+    <div class="form-row">
+      <label for="confirm_password">Confirm new password</label>
+      <input type="password" id="confirm_password" name="confirm_password" required autocomplete="new-password">
+    </div>
+    <button type="submit" class="btn btn-primary">Change password</button>
+  </form>
+</section>
 
 <section style="max-width: 480px;">
   <h2>Two-Factor Authentication</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
 
   {% if totp_enabled %}
   <p>Status: <strong>Enabled</strong></p>

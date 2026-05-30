@@ -48,7 +48,7 @@ def _get_user_by_username(username: str) -> Optional[dict]:
     conn.row_factory = sqlite3.Row
     try:
         row = conn.execute(
-            "SELECT id, username, password_hash, role, totp_secret, totp_enabled FROM users WHERE username = ?",
+            "SELECT id, username, password_hash, role, totp_secret, totp_enabled, session_version FROM users WHERE username = ?",
             (username,),
         ).fetchone()
     finally:
@@ -63,7 +63,7 @@ def _get_user_by_id(user_id: int) -> Optional[dict]:
     conn.row_factory = sqlite3.Row
     try:
         row = conn.execute(
-            "SELECT id, username, password_hash, role, totp_secret, totp_enabled FROM users WHERE id = ?",
+            "SELECT id, username, password_hash, role, totp_secret, totp_enabled, session_version FROM users WHERE id = ?",
             (user_id,),
         ).fetchone()
     finally:
@@ -131,7 +131,7 @@ async def login_post(
         return response
 
     response = RedirectResponse("/", status_code=303)
-    create_session(response, user["id"])
+    create_session(response, user["id"], user["session_version"])
     response.delete_cookie(CSRF_COOKIE_NAME)
     return response
 
@@ -195,7 +195,7 @@ async def login_2fa_post(
         return resp
 
     response = RedirectResponse("/", status_code=303)
-    create_session(response, user["id"])
+    create_session(response, user["id"], user["session_version"])
     response.delete_cookie(PENDING_2FA_COOKIE)
     response.delete_cookie(CSRF_COOKIE_NAME)
     return response

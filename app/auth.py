@@ -36,8 +36,8 @@ def verify_password(plain: str, hashed: str) -> bool:
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
-def create_session(response: Response, user_id: int) -> None:
-    token = _signer().sign(str(user_id)).decode()
+def create_session(response: Response, user_id: int, session_version: int) -> None:
+    token = _signer().sign(f"{user_id}:{session_version}").decode()
     secure = os.environ.get("HTTPS_ONLY", "false").lower() == "true"
     response.set_cookie(
         COOKIE_NAME,
@@ -58,20 +58,23 @@ def get_current_user(request: Request) -> Optional[dict]:
     if not token:
         return None
     try:
-        data = _signer().unsign(token, max_age=SESSION_MAX_AGE)
-        user_id = int(data)
+        data = _signer().unsign(token, max_age=SESSION_MAX_AGE).decode()
+        user_id_str, version_str = data.split(":", 1)
+        user_id = int(user_id_str)
+        session_version = int(version_str)
     except (BadSignature, SignatureExpired, ValueError):
         return None
 
     conn = _connect()
     try:
         row = conn.execute(
-            "SELECT id, username, role FROM users WHERE id = ?", (user_id,)
+            "SELECT id, username, role, session_version FROM users WHERE id = ?",
+            (user_id,),
         ).fetchone()
     finally:
         conn.close()
 
-    if not row:
+    if not row or row["session_version"] != session_version:
         return None
     return {"id": row["id"], "username": row["username"], "role": row["role"]}
 

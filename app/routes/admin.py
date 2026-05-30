@@ -13,6 +13,8 @@ from fastapi.responses import RedirectResponse
 from app.auth import (
     CSRF_COOKIE_NAME,
     _CSRF_COOKIE_KWARGS,
+    create_session,
+    hash_password,
     require_admin,
     verify_csrf,
     verify_password,
@@ -47,7 +49,7 @@ def _get_full_user(user_id: int) -> Optional[dict]:
     return dict(row) if row else None
 
 
-def _account_response(request, user, full_user, token, message=None, error=None, status_code=200):
+def _account_response(request, user, full_user, token, message=None, error=None, pw_error=None, status_code=200):
     qr_b64 = None
     if full_user["totp_secret"] and not full_user["totp_enabled"]:
         qr_b64 = _totp_qr_b64(user["username"], full_user["totp_secret"])
@@ -62,6 +64,7 @@ def _account_response(request, user, full_user, token, message=None, error=None,
         "qr_b64": qr_b64,
         "message": message,
         "error": error,
+        "pw_error": pw_error,
     }, status_code=status_code)
     resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
     return resp
@@ -152,3 +155,58 @@ async def account_2fa_disable(
         conn.close()
 
     return RedirectResponse("/admin/account?message=2fa_disabled", status_code=303)
+
+
+@router.post("/admin/account/password")
+async def account_password_change(
+    request: Request,
+    user: dict = Depends(require_admin),
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    _csrf: None = Depends(verify_csrf),
+):
+    full_user = _get_full_user(user["id"])
+
+    if not verify_password(current_password, full_user["password_hash"]):
+        token = secrets.token_hex(16)
+        return _account_response(
+            request, user, full_user, token,
+            pw_error="! Incorrect current password.",
+            status_code=400,
+        )
+
+    if new_password != confirm_password:
+        token = secrets.token_hex(16)
+        return _account_response(
+            request, user, full_user, token,
+            pw_error="! New password and confirmation do not match.",
+            status_code=400,
+        )
+
+    if len(new_password) < 8:
+        token = secrets.token_hex(16)
+        return _account_response(
+            request, user, full_user, token,
+            pw_error="! New password must be at least 8 characters.",
+            status_code=400,
+        )
+
+    new_hash = hash_password(new_password)
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            "UPDATE users SET password_hash = ?, session_version = session_version + 1 WHERE id = ?",
+            (new_hash, user["id"]),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT session_version FROM users WHERE id = ?", (user["id"],)
+        ).fetchone()
+        new_version = row["session_version"]
+    finally:
+        conn.close()
+
+    response = RedirectResponse("/admin/account?message=password_changed", status_code=303)
+    create_session(response, user["id"], new_version)
+    return response

@@ -51,7 +51,7 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - Login flow: after password verifies, prompt for 6-digit code; lock account after N bad codes (reuse the existing rate-limit pattern)
   - Add a `2fa_secret` column to `users`; nullable so `role=user` accounts can stay password-only
   - **Rationale:** Expenses + Wealth hold real financial data — a leaked admin password should not be enough to read or alter the ledger
-- [ ] **Admin account page (`/admin/account`)**
+- [x] **Admin account page (`/admin/account`)**
   - Change-password form: current password + new password + confirm new password
   - Re-verify current password before accepting the change; never trust session alone for security-critical mutations
   - On success, invalidate other sessions (rotate `SECRET_KEY`-derived signing or bump a per-user session version) so a stolen cookie can't survive the rotation
