@@ -23,10 +23,8 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - [app/main.py:31-36](app/main.py:31-36) calls `expenses_model.init_db()`, `health_model.init_db()`, `gallery_init_db()`, `wealth_model.init_db()`
   - If any of those still create tables in their old per-domain file, every container restart resurrects empty legacy DBs alongside `app.db`
   - Either delete the calls (since `init_db.sh` now owns schema for `app.db`) or confirm each one is now a no-op against the consolidated DB
-- [ ] **⚠️ Run `scripts/migrate_to_app_db.py` against the real data once**
-  - The migration script exists but row-level copy has to actually happen before the rename-to-`.bak` step
-  - Verify counts before and after; spot-check Expenses + Wealth
-  - Phase 2.5 has "Decide fate of migrate_to_app_db.py" — that decision is "run it, then delete"
+- [x] **⚠️ Run `scripts/migrate_to_app_db.py` against the real data once**
+  - All rows copied clean (449 transactions, 9 wealth accounts, 39 health records, 12 gallery images, 22 library items). Legacy DBs renamed to `.bak`. Script deleted.
 - [ ] **⚠️ Local Docker dry-run end-to-end** (gate for all of the above)
   - `docker build` (uses updated `requirements.lock`)
   - `docker run` with mounted volume
@@ -139,7 +137,7 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - References old per-DB files and Render deployment
 - [ ] **Fix `deployment_for_dummy.md` line 155**
   - Still has the old `for f in migrations/*.sql; do sqlite3 data/expenses.db...` loop; replace with `bash scripts/init_db.sh`
-- [ ] **Delete `scripts/migrate_to_app_db.py`** once the Critical-section migration run is complete
+- [x] **Delete `scripts/migrate_to_app_db.py`** once the Critical-section migration run is complete
 - [ ] **Archive Hetzner legacy scripts**
   - `scripts/deploy.sh` and `scripts/server_setup.sh` — move to `docs/legacy/` or delete
 
