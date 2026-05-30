@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent.parent / "data" / "library.db"
+DB_PATH = Path(__file__).parent.parent.parent / "data" / "app.db"
 
 
 _ITEM_COLS = {"title", "author", "ref_number", "discipline", "description", "comment", "rating", "file_path"}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent.parent / "data" / "expenses.db"
+DB_PATH = Path(__file__).parent.parent.parent / "data" / "app.db"
 MIGRATION = Path(__file__).parent.parent.parent / "migrations" / "007_expenses.sql"
 
 

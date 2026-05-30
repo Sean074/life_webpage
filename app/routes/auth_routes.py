@@ -25,7 +25,7 @@ from app.templates_config import templates
 
 router = APIRouter()
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "library.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "app.db")
 
 # rate limiting: {ip: [timestamp, ...]}
 _failures: dict = defaultdict(list)

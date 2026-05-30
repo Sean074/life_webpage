@@ -9,7 +9,7 @@ from fastapi import Depends, Form, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 
-DB_PATH = Path(__file__).parent.parent / "data" / "library.db"
+DB_PATH = Path(__file__).parent.parent / "data" / "app.db"
 COOKIE_NAME = "session"
 SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 

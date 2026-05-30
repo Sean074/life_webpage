@@ -128,11 +128,7 @@ Nightly backups run via `scripts/backup.sh`, which uses the SQLite online backup
 Each backup is written to a dated directory inside the data volume:
 ```
 /var/lib/dokploy/volumes/life-data/backups/YYYY-MM-DD/
-  library.db
-  gallery.db
-  wealth.db
-  health.db
-  expenses.db
+  app.db
 ```
 
 Backups older than 7 days are pruned automatically.
@@ -167,9 +163,9 @@ This runs every Sunday at 09:00 and mirrors only the `backups/` subdirectory (no
 #### Restoring from a backup
 
 1. Identify the backup date to restore from: `ls /var/lib/dokploy/volumes/life-data/backups/`
-2. Copy the desired file(s) into `/app/data/` inside the container:
+2. Copy the desired file into `/app/data/` inside the container:
    ```bash
-   docker exec <container-id> cp /app/data/backups/YYYY-MM-DD/expenses.db /app/data/expenses.db
+   docker exec <container-id> cp /app/data/backups/YYYY-MM-DD/app.db /app/data/app.db
    ```
 3. Restart the container: Dokploy UI → application → **Restart**
 

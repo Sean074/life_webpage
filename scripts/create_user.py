@@ -8,7 +8,7 @@ from pathlib import Path
 
 import bcrypt
 
-DB_PATH = Path(__file__).parent.parent / "data" / "library.db"
+DB_PATH = Path(__file__).parent.parent / "data" / "app.db"
 
 
 def main():

@@ -99,7 +99,7 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
 
 **Goal:** Trust the numbers. Do before relying on Expenses/Wealth for real decisions.
 
-- [ ] **Consolidate to a single `app.db`**
+- [x] **Consolidate to a single `app.db`**
   - One schema, one backup, one migration target
   - Removes the cross-DB migration confusion that caused Phase 0's broken deploy command
   - Migration script: copy tables out of each old DB into the new one, verify row counts, swap

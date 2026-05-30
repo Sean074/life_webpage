@@ -71,7 +71,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 @app.get("/healthz")
 async def healthz():
     try:
-        conn = sqlite3.connect("file:data/library.db?mode=ro", uri=True)
+        conn = sqlite3.connect("file:data/app.db?mode=ro", uri=True)
         conn.execute("SELECT 1")
         conn.close()
         return {"ok": True}

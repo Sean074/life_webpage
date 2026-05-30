@@ -23,7 +23,7 @@ from app.templates_config import templates
 
 router = APIRouter()
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "library.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "app.db")
 
 
 def _totp_qr_b64(username: str, secret: str) -> str:
