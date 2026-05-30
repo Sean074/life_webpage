@@ -117,7 +117,61 @@ rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/
 | View logs | Dokploy UI → application → **Logs** tab |
 | Restart app | Dokploy UI → application → **Restart** |
 | Add a user | Dokploy UI → application → **Terminal** → `python scripts/create_user.py --username X --role user` |
-| Backup databases | `rsync -avz root@<server-ip>:/var/lib/dokploy/volumes/life-data/ ./data-backup/` |
+| Manual backup | `docker exec $(docker ps -q -f name=life) bash /app/scripts/backup.sh` |
+
+---
+
+### Backups
+
+Nightly backups run via `scripts/backup.sh`, which uses the SQLite online backup API (`sqlite3 .backup`) — safe while the database is being written. **Never use plain `cp` on a live SQLite file.**
+
+Each backup is written to a dated directory inside the data volume:
+```
+/var/lib/dokploy/volumes/life-data/backups/YYYY-MM-DD/
+  library.db
+  gallery.db
+  wealth.db
+  health.db
+  expenses.db
+```
+
+Backups older than 7 days are pruned automatically.
+
+#### Setting up the nightly cron on the VPS
+
+SSH into the VPS as root and open the crontab:
+
+```bash
+ssh root@<server-ip>
+crontab -e
+```
+
+Add this line:
+
+```
+0 2 * * * docker exec $(docker ps -q -f name=life) bash /app/scripts/backup.sh >> /var/log/life-backup.log 2>&1
+```
+
+This runs at 02:00 nightly. `docker ps -q -f name=life` resolves the current container ID by name — it survives redeployments. Logs accumulate at `/var/log/life-backup.log` on the host.
+
+#### Weekly off-server rsync to laptop
+
+Add to your laptop's crontab (`crontab -e` on macOS):
+
+```
+0 9 * * 0  rsync -avz --delete root@<server-ip>:/var/lib/dokploy/volumes/life-data/backups/ ~/backups/life/ >> ~/Library/Logs/life-backup-rsync.log 2>&1
+```
+
+This runs every Sunday at 09:00 and mirrors only the `backups/` subdirectory (not the live database files).
+
+#### Restoring from a backup
+
+1. Identify the backup date to restore from: `ls /var/lib/dokploy/volumes/life-data/backups/`
+2. Copy the desired file(s) into `/app/data/` inside the container:
+   ```bash
+   docker exec <container-id> cp /app/data/backups/YYYY-MM-DD/expenses.db /app/data/expenses.db
+   ```
+3. Restart the container: Dokploy UI → application → **Restart**
 
 ---
 

@@ -78,13 +78,13 @@ Phased plan from the 2026-05-28 design review. Items are roughly ordered for val
   - Pillow one-liner: open → `Image.new(img.mode, img.size)` + `paste` (or `img.getdata()` round-trip) → save without `exif=` kwarg
   - Apply to thumbnail generation too
   - **Rationale:** phone photos carry GPS coordinates, camera serial, and timestamps — publishing a photo of a painting should not also publish your home address
-- [ ] **Nightly backups**
+- [x] **Nightly backups**
   - Cron on the VPS: `sqlite3 <db> ".backup '<dest>'"` for each DB (online backup — safe while DB is being written)
   - Destination: `/var/lib/dokploy/volumes/life-data/backups/YYYY-MM-DD/`
   - 7-day rotation
   - Weekly off-server `rsync` to laptop
   - **Plain `cp` of a live SQLite file is not safe — do not use it**
-- [ ] **Custom 404 / 500 templates**
+- [x] **Custom 404 / 500 templates**
   - Match the visual style standard
   - Stop leaking FastAPI's default JSON error responses
 - [ ] **Fix `POST /blog/<slug>/delete`** ([app/routes/blog.py:174](app/routes/blog.py:174))

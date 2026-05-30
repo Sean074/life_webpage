@@ -3,8 +3,10 @@ load_dotenv()
 
 import sqlite3
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import http_exception_handler as default_http_exception_handler
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.auth import get_current_user
 from app.routes.admin import router as admin_router
@@ -29,6 +31,26 @@ app.include_router(library_router)
 app.include_router(expenses_router)
 app.include_router(wealth_router)
 app.include_router(health_router)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        user = get_current_user(request)
+        return templates.TemplateResponse("404.html", {"request": request, "user": user}, status_code=404)
+    if exc.status_code >= 500:
+        user = get_current_user(request)
+        return templates.TemplateResponse("500.html", {"request": request, "user": user}, status_code=exc.status_code)
+    return await default_http_exception_handler(request, exc)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    try:
+        user = get_current_user(request)
+    except Exception:
+        user = None
+    return templates.TemplateResponse("500.html", {"request": request, "user": user}, status_code=500)
 
 
 @app.get("/healthz")
