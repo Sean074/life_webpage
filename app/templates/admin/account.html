@@ -5,12 +5,28 @@
 {% block content %}
 <h1>Account</h1>
 
-{% if request.query_params.get('message') == 'password_changed' %}
+{% set msg = request.query_params.get('message') or message %}
+{% if msg == 'password_changed' %}
 <p class="success">Password updated. Other sessions have been signed out.</p>
-{% elif request.query_params.get('message') == '2fa_enabled' %}
+{% elif msg == '2fa_enabled' %}
 <p class="success">Two-factor authentication enabled.</p>
-{% elif request.query_params.get('message') == '2fa_disabled' %}
+{% elif msg == '2fa_disabled' %}
 <p class="success">Two-factor authentication disabled.</p>
+{% elif msg == 'recovery_codes_regenerated' %}
+<p class="success">Backup codes regenerated. Previous codes no longer work.</p>
+{% endif %}
+
+{% if new_backup_codes %}
+<section style="max-width: 480px; margin-bottom: 2rem; padding: 1rem; border: 2px solid #000;">
+  <h2>Your Backup Codes</h2>
+  <p><strong>Save these now — this is the only time they will be displayed.</strong></p>
+  <p>Each code can be used once to log in if you lose access to your authenticator app.</p>
+  <ul style="font-family: monospace; font-size: 1.1rem; list-style: none; padding-left: 0;">
+    {% for code in new_backup_codes %}
+    <li><code>{{ code }}</code></li>
+    {% endfor %}
+  </ul>
+</section>
 {% endif %}
 
 <section style="max-width: 480px; margin-bottom: 2rem;">
@@ -40,6 +56,25 @@
 
   {% if totp_enabled %}
   <p>Status: <strong>Enabled</strong></p>
+  <p>Backup codes remaining: <strong>{{ backup_codes_remaining }}</strong>{% if backup_codes_remaining <= 3 %} <span class="error">(low — regenerate soon)</span>{% endif %}</p>
+
+  <form method="post" action="/admin/account/2fa/recovery-codes/regenerate" style="margin-bottom: 2rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="form-row">
+      <label for="regen_password">
+        {% if backup_codes_remaining > 0 %}
+        Confirm password to regenerate (invalidates {{ backup_codes_remaining }} existing code{{ 's' if backup_codes_remaining != 1 else '' }})
+        {% else %}
+        Confirm password to generate backup codes
+        {% endif %}
+      </label>
+      <input type="password" id="regen_password" name="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">
+      {% if backup_codes_remaining > 0 %}Regenerate backup codes{% else %}Generate backup codes{% endif %}
+    </button>
+  </form>
+
   <form method="post" action="/admin/account/2fa/disable">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="form-row">

@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import sqlite3
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exception_handlers import http_exception_handler as default_http_exception_handler
 from fastapi.responses import JSONResponse
@@ -24,14 +25,16 @@ from app.routes.health import router as health_router
 from app.services.blog import get_recent_posts
 from app.templates_config import templates
 
-app = FastAPI()
 
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     expenses_model.init_db()
     health_model.init_db()
     wealth_model.init_db(seed_accounts=wealth_svc.latest_accounts_from_csv())
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

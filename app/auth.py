@@ -140,3 +140,22 @@ def verify_csrf(request: Request, csrf_token: str = Form(...)) -> None:
     cookie_token = request.cookies.get(CSRF_COOKIE_NAME, "")
     if not secrets.compare_digest(csrf_token, cookie_token):
         raise HTTPException(status_code=400, detail="Invalid CSRF token")
+
+
+BACKUP_CODE_COUNT = 8
+
+
+def _normalize_backup_code(submitted: str) -> str:
+    return submitted.strip().replace("-", "").replace(" ", "").lower()
+
+
+def generate_backup_codes(count: int = BACKUP_CODE_COUNT) -> list[str]:
+    return [f"{secrets.token_hex(5)[:5]}-{secrets.token_hex(5)[:5]}" for _ in range(count)]
+
+
+def hash_backup_code(code: str) -> str:
+    return bcrypt.hashpw(_normalize_backup_code(code).encode(), bcrypt.gensalt()).decode()
+
+
+def verify_backup_code(submitted: str, hashed: str) -> bool:
+    return bcrypt.checkpw(_normalize_backup_code(submitted).encode(), hashed.encode())

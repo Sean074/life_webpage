@@ -1,11 +1,11 @@
-fastapi
+fastapi>=0.130.0
 uvicorn
 jinja2
 itsdangerous
 bcrypt
 python-dotenv
 python-multipart
-Pillow==11.3.0
+Pillow>=12.2.0
 Markdown
 bleach
 pyotp

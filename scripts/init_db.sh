@@ -36,4 +36,6 @@ if ! sqlite3 "$DB" "PRAGMA table_info(health_records);" | grep -q "tv_hours"; th
     sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/010_health_tv_hours.sql"
 fi
 
+sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/011_backup_codes.sql"
+
 echo "Database initialisation complete."

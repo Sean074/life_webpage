@@ -40,9 +40,15 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - The script is correct; nothing in the repo wires it to a schedule
   - On Dokploy: either a sidecar cron container, host cron on the VPS that `docker exec`s in, or a Dokploy scheduled task
   - Verify by waiting 24h and confirming a timestamped directory appears under `/var/lib/dokploy/volumes/life-data/backups/`
-- [ ] **⚠️ Verify 2FA login flow actually challenges for TOTP**
-  - Migration 008 added `totp_secret` + `totp_enabled`; admin router was added; but trace `POST /login` end-to-end — when `totp_enabled=1`, is the user actually prompted for a code before the session cookie is set?
-  - If schema is there but the challenge isn't enforced, 2FA is theatre
+- [x] **⚠️ Verify 2FA login flow actually challenges for TOTP**
+  - Traced `POST /login` → on `totp_enabled=1`, sets only a 5-min signed `pending_2fa` cookie and redirects to `/login/2fa`. The real `session` cookie is **only** issued after `pyotp.TOTP(secret).verify(code)` succeeds at [auth_routes.py:184](app/routes/auth_routes.py:184). Confirmed not theatre.
+- [x] **⚠️ Add 2FA backup codes (lockout recovery)**
+  - 8 codes per batch, format `xxxxx-xxxxx`, bcrypt-hashed, single-use. Generated on TOTP confirm; regeneratable from `/admin/account` (requires password).
+  - Login path: `/login/2fa/recovery` — same rate-limit pocket as TOTP; consumes code on success.
+  - New migration: `migrations/011_backup_codes.sql`. New template: `app/templates/login_recovery.html`.
+- [ ] **⚠️ Re-run local Docker dry-run after backup-codes change**
+  - The earlier dry-run (above) predates `011_backup_codes.sql` and the new `/login/2fa/recovery` routes
+  - Repeat: build → run → init_db → enable 2FA → confirm codes shown → log out → log back in via TOTP → log out → log in via a backup code → confirm `backup_codes_remaining` decremented → regenerate codes → confirm old codes rejected
 - [ ] **Verify `.env` is not tracked by git**
   - `git ls-files .env` should return empty
   - If it lists `.env`, remove from index AND rotate `SECRET_KEY` (history is now public)
