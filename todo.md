@@ -143,8 +143,8 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
 
 - [ ] **Archive or delete `docs/render_standard.md`**
   - References old per-DB files and Render deployment
-- [ ] **Fix `deployment_for_dummy.md` line 155**
-  - Still has the old `for f in migrations/*.sql; do sqlite3 data/expenses.db...` loop; replace with `bash scripts/init_db.sh`
+- [x] **Fix `deployment_for_dummy.md` line 155**
+  - Resolved 2026-05-30: full rewrite of `deployment_for_dummy.md` after the first real production deploy. New version reflects what was actually done (Dokploy + Traefik) and includes a Common Gotchas section covering nginx port conflict, missing Traefik, starlette/fastapi version drift, rsync staging, and DNS validation. The old stale `sqlite3 data/expenses.db` loop is gone — `init_db.sh` runs automatically via the Dockerfile `CMD`.
 - [x] **Delete `scripts/migrate_to_app_db.py`** once the Critical-section migration run is complete
 - [ ] **Archive Hetzner legacy scripts**
   - `scripts/deploy.sh` and `scripts/server_setup.sh` — move to `docs/legacy/` or delete
