@@ -22,8 +22,7 @@ router = APIRouter(prefix="/library")
 
 @router.get("")
 async def index(request: Request, user: dict = Depends(require_auth)):
-    return templates.TemplateResponse("library/index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "library/index.html", {
         "user": user,
         "active": "library",
     })
@@ -44,8 +43,7 @@ async def search(
         tag=tag or None,
         rating=int(rating) if rating else None,
     )
-    return templates.TemplateResponse("library/search.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "library/search.html", {
         "user": user,
         "active": "library",
         "items": items,
@@ -62,8 +60,7 @@ async def search(
 async def sync_get(request: Request, user: dict = Depends(require_admin)):
     untracked = get_untracked_files()
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("library/sync.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "library/sync.html", {
         "user": user,
         "active": "library",
         "untracked": untracked,
@@ -92,8 +89,7 @@ async def sync_post(
 async def review(request: Request, user: dict = Depends(require_auth)):
     items = get_all_items()
     incomplete_ids = {i["id"] for i in get_incomplete_items()}
-    return templates.TemplateResponse("library/review.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "library/review.html", {
         "user": user,
         "active": "library",
         "items": items,
@@ -107,8 +103,7 @@ async def edit_get(request: Request, item_id: int, user: dict = Depends(require_
     if not item:
         return RedirectResponse("/library/review", status_code=303)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("library/edit.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "library/edit.html", {
         "user": user,
         "active": "library",
         "item": item,

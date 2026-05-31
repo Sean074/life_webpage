@@ -1,5 +1,4 @@
-fastapi==0.128.8
-starlette<1.0
+fastapi
 uvicorn
 jinja2
 itsdangerous

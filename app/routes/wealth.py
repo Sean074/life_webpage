@@ -24,8 +24,7 @@ async def wealth_index(request: Request, user: dict = Depends(require_auth)):
     projection = wealth_svc.run_projection(params, net_worth)
     backward_projection = wealth_svc.run_backward_projection(params, net_worth)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("wealth/index.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "wealth/index.html", {
         "user": user,
         "active": "wealth",
         "accounts": accounts,

@@ -53,10 +53,10 @@ app.include_router(health_router)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 404:
         user = get_current_user(request)
-        return templates.TemplateResponse("404.html", {"request": request, "user": user}, status_code=404)
+        return templates.TemplateResponse(request, "404.html", {"user": user}, status_code=404)
     if exc.status_code >= 500:
         user = get_current_user(request)
-        return templates.TemplateResponse("500.html", {"request": request, "user": user}, status_code=exc.status_code)
+        return templates.TemplateResponse(request, "500.html", {"user": user}, status_code=exc.status_code)
     return await default_http_exception_handler(request, exc)
 
 
@@ -66,7 +66,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         user = get_current_user(request)
     except Exception:
         user = None
-    return templates.TemplateResponse("500.html", {"request": request, "user": user}, status_code=500)
+    return templates.TemplateResponse(request, "500.html", {"user": user}, status_code=500)
 
 
 @app.get("/healthz")
@@ -82,8 +82,7 @@ async def healthz():
 
 @app.get("/")
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "user": get_current_user(request),
         "active": "home",
         "recent_posts": get_recent_posts(3),

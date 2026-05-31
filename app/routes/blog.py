@@ -32,8 +32,7 @@ async def blog_index(request: Request):
     else:
         posts = blog_svc.get_all_posts()
         query = ""
-    return templates.TemplateResponse("blog/index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "blog/index.html", {
         "user": user,
         "active": "blog",
         "posts": posts,
@@ -44,8 +43,7 @@ async def blog_index(request: Request):
 @router.get("/blog/new", response_class=HTMLResponse)
 async def blog_new_get(request: Request, user=Depends(require_auth)):
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("blog/new.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "blog/new.html", {
         "user": user,
         "active": "blog",
         "csrf_token": token,
@@ -78,8 +76,7 @@ async def blog_new_post(
 
     if errors:
         new_csrf = secrets.token_hex(16)
-        resp = templates.TemplateResponse("blog/new.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "blog/new.html", {
             "user": user,
             "active": "blog",
             "csrf_token": new_csrf,
@@ -100,8 +97,7 @@ async def blog_edit_get(slug: str, request: Request, user=Depends(require_admin)
     if post is None:
         return RedirectResponse("/blog", status_code=303)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("blog/edit.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "blog/edit.html", {
         "user": user,
         "active": "blog",
         "post": post,
@@ -134,8 +130,7 @@ async def blog_edit_post(
     if errors:
         new_csrf = secrets.token_hex(16)
         post = blog_svc.get_post_raw(slug)
-        resp = templates.TemplateResponse("blog/edit.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "blog/edit.html", {
             "user": user,
             "active": "blog",
             "post": post,
@@ -166,15 +161,13 @@ async def blog_post(slug: str, request: Request):
     user = get_current_user(request)
     post = blog_svc.get_post(slug)
     if post is None:
-        return templates.TemplateResponse("blog/post.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "blog/post.html", {
             "user": user,
             "active": "blog",
             "post": None,
         }, status_code=404)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("blog/post.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "blog/post.html", {
         "user": user,
         "active": "blog",
         "post": post,

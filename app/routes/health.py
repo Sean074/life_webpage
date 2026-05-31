@@ -18,8 +18,7 @@ async def health_index(request: Request, user: dict = Depends(require_auth)):
     weekly = health_model.get_weekly_averages()
     summary = health_model.get_recent_summary(days=7)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("health/index.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "health/index.html", {
         "user": user,
         "active": "health",
         "records": records,

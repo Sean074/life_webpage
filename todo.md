@@ -58,19 +58,14 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
 - [ ] **Production env in Dokploy**
   - Set `HTTPS_ONLY=true` in the Dokploy environment tab
   - Confirm `SECRET_KEY` is fresh, not copied from `.env`
-- [ ] **Validate `session_version` in `get_current_user`**
-  - Migration 009 added the column; the admin password-change route presumably bumps it
-  - Verify the auth layer actually compares the cookie's session-version claim against the user row — otherwise a stolen cookie still survives a password rotation
-- [ ] **Reconcile `requirements.txt`**
-  - Lock + Dockerfile are now the source of truth; `requirements.txt` is a stale third copy
-  - Either delete `requirements.txt` and update README's `pip install -r requirements.txt` line, or auto-generate it from the lock — pick one
-- [ ] **Migrate `templates.TemplateResponse` calls to starlette ≥1.0 API**
-  - Currently pinned to `starlette<1.0` in `requirements.in` because all 32 call sites use the deprecated signature `TemplateResponse("name.html", {"request": request, ...})`
-  - New signature is `TemplateResponse(request, "name.html", {...})` (request as first positional, dropped from context)
-  - Until done, cannot upgrade past fastapi 0.128.8 (Docker test 2026-05-30 confirmed: `TypeError: unhashable type: 'dict'` from Jinja2 cache lookup on every page)
-- [ ] **Narrow CSV-import exception catch** ([app/routes/expenses.py:113](app/routes/expenses.py:113))
-  - Currently catches bare `Exception` and reports "Import failed: check file format"
-  - Narrow to the parser-level errors; let real bugs surface
+- [x] **Validate `session_version` in `get_current_user`**
+  - Verified 2026-05-30: `auth.py:77` compares cookie version against DB row; `admin.py` password-change increments the column and re-issues the cookie. Working correctly.
+- [x] **Reconcile `requirements.txt`**
+  - Regenerated 2026-05-30 via `pip-compile requirements.in` (no hashes) targeting Python 3.11. Now tracks `requirements.lock`: fastapi==0.136.3, starlette==1.2.1, uvicorn==0.48.0.
+- [x] **Migrate `templates.TemplateResponse` calls to starlette ≥1.0 API**
+  - Migrated all 32 call sites 2026-05-30: `TemplateResponse(request, "name.html", {...})`. Removed `starlette<1.0` pin and `fastapi==0.128.8` pin from `requirements.in`; regenerated lock and txt. Now on starlette 1.2.1 / fastapi 0.136.3.
+- [x] **Narrow CSV-import exception catch** ([app/routes/expenses.py](app/routes/expenses.py))
+  - Narrowed 2026-05-30 to `(ValueError, KeyError, csv.Error, UnicodeDecodeError)`. Moved inline `import logging` and `import csv` to top of file.
 
 ---
 
