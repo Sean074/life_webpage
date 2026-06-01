@@ -53,9 +53,6 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 ### Dead code removal
 
-- [ ] **Remove unused imports**
-  - `RedirectResponse` from `app/auth.py:9`
-  - `timedelta` from `app/routes/expenses.py:1`
 - [ ] **Remove `all_categories`**
   - Remove the import from `app/routes/gallery.py:14`
   - Delete the `all_categories()` function from `app/models/gallery.py`

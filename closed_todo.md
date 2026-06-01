@@ -77,5 +77,8 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 - [x] **Delete `scripts/migrate_to_app_db.py`**
   - Deleted after the Critical-section migration run completed.
 
+- [x] **Remove unused imports**
+  - Removed `RedirectResponse` from `app/auth.py` and `timedelta` from `app/routes/expenses.py`. Completed 2026-05-31.
+
 - [x] **Archive Hetzner legacy scripts**
   - Deleted `scripts/deploy.sh` and `scripts/server_setup.sh` 2026-05-30.

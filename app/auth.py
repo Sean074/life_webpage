@@ -6,7 +6,6 @@ from typing import Optional
 
 import bcrypt
 from fastapi import Depends, Form, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse
 from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 
 DB_PATH = Path(__file__).parent.parent / "data" / "app.db"
