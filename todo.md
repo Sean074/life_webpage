@@ -1,55 +1,15 @@
 # Life — Path to v1
 
-Updated 2026-05-29 after the second design review. Closed items removed; new items added; critical-path items flagged.
+Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 ---
 
-## ⚠️ Critical — next session
+## ⚠️ Critical — remaining
 
-These are blockers for a working deploy. The codebase is in a half-finished DB consolidation: schema lives in `app.db` but pieces of the application still read from the legacy per-domain files. Until these land, login fails, transactions land in orphan DBs, and `/healthz` 500s on a fresh container.
-
-- [x] **⚠️ Repoint `app/auth.py` at `app.db`**
-  - [app/auth.py:11](app/auth.py:11) — `DB_PATH = Path(__file__).parent.parent / "data" / "library.db"` is still the legacy path
-  - Change to `... / "data" / "app.db"`
-  - Without this, the entire auth layer reads users from a file that `init_db.sh` no longer populates
-- [x] **⚠️ Repoint route-level DB paths**
-  - [app/routes/auth_routes.py:16](app/routes/auth_routes.py:16) — `os.path.join(..., "library.db")` → `app.db`
-  - `app/routes/admin.py` — same audit (referenced in Phase 2.5 hygiene)
-  - Use `Path(__file__).parent.parent.parent / "data" / "app.db"` to match the model layer
-- [x] **⚠️ Verify every `app/models/*.py` reads from `app.db`**
-  - Phase 2.5 standardization implies models are consistent, but worth grepping: `grep -r "library.db\|gallery.db\|wealth.db\|health.db\|expenses.db" app/`
-  - Anything that surfaces is a bug
-- [x] **⚠️ Audit the per-domain `init_db()` calls in `main.py` startup**
-  - [app/main.py:31-36](app/main.py:31-36) calls `expenses_model.init_db()`, `health_model.init_db()`, `gallery_init_db()`, `wealth_model.init_db()`
-  - If any of those still create tables in their old per-domain file, every container restart resurrects empty legacy DBs alongside `app.db`
-  - Either delete the calls (since `init_db.sh` now owns schema for `app.db`) or confirm each one is now a no-op against the consolidated DB
-- [x] **⚠️ Run `scripts/migrate_to_app_db.py` against the real data once**
-  - All rows copied clean (449 transactions, 9 wealth accounts, 39 health records, 12 gallery images, 22 library items). Legacy DBs renamed to `.bak`. Script deleted.
-- [x] **⚠️ Local Docker dry-run end-to-end** (gate for all of the above)
-  - `docker build` (uses updated `requirements.lock`)
-  - `docker run` with mounted volume
-  - Run `init_db.sh` inside the container
-  - Create admin user, log in, write a post, upload an image, edit a wealth account
-  - `docker restart` — verify data survived and no orphan `.db` files appeared
-  - Until this passes, do not deploy
-- [x] **⚠️ Chain `init_db.sh` before `uvicorn` in container `CMD`**
-  - `/healthz` opens `data/app.db?mode=ro`; on a fresh container before init, the file doesn't exist and the probe returns 500
-  - Dokploy will refuse to mark the container healthy and may restart-loop
-  - Options: change Dockerfile `CMD` to `bash -c "bash scripts/init_db.sh && uvicorn ..."`, or split into a one-shot init container, or relax `/healthz` to distinguish "DB missing" (503) from "DB unreachable" (500)
 - [ ] **⚠️ Verify `backup.sh` is actually scheduled**
   - The script is correct; nothing in the repo wires it to a schedule
   - On Dokploy: either a sidecar cron container, host cron on the VPS that `docker exec`s in, or a Dokploy scheduled task
   - Verify by waiting 24h and confirming a timestamped directory appears under `/var/lib/dokploy/volumes/life-data/backups/`
-- [x] **⚠️ Verify 2FA login flow actually challenges for TOTP**
-  - Traced `POST /login` → on `totp_enabled=1`, sets only a 5-min signed `pending_2fa` cookie and redirects to `/login/2fa`. The real `session` cookie is **only** issued after `pyotp.TOTP(secret).verify(code)` succeeds at [auth_routes.py:184](app/routes/auth_routes.py:184). Confirmed not theatre.
-- [x] **⚠️ Add 2FA backup codes (lockout recovery)**
-  - 8 codes per batch, format `xxxxx-xxxxx`, bcrypt-hashed, single-use. Generated on TOTP confirm; regeneratable from `/admin/account` (requires password).
-  - Login path: `/login/2fa/recovery` — same rate-limit pocket as TOTP; consumes code on success.
-  - New migration: `migrations/011_backup_codes.sql`. New template: `app/templates/login_recovery.html`.
-- [x] **⚠️ Re-run local Docker dry-run after backup-codes change**
-  - Passed 2026-05-30: built fresh image (after pinning `fastapi==0.128.8` + `starlette<1.0` in `requirements.in` to resolve the starlette 1.x `TemplateResponse` API break), enabled 2FA, confirmed 8 codes shown once, verified TOTP login, verified backup-code login, confirmed count decrements (8→7), regenerated codes and confirmed old codes rejected.
-- [x] **Verify `.env` is not tracked by git**
-  - Verified 2026-05-30: `git ls-files .env` returned empty. Safe.
 
 ---
 
@@ -58,21 +18,11 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
 - [ ] **Production env in Dokploy**
   - Set `HTTPS_ONLY=true` in the Dokploy environment tab
   - Confirm `SECRET_KEY` is fresh, not copied from `.env`
-- [x] **Validate `session_version` in `get_current_user`**
-  - Verified 2026-05-30: `auth.py:77` compares cookie version against DB row; `admin.py` password-change increments the column and re-issues the cookie. Working correctly.
-- [x] **Reconcile `requirements.txt`**
-  - Regenerated 2026-05-30 via `pip-compile requirements.in` (no hashes) targeting Python 3.11. Now tracks `requirements.lock`: fastapi==0.136.3, starlette==1.2.1, uvicorn==0.48.0.
-- [x] **Migrate `templates.TemplateResponse` calls to starlette ≥1.0 API**
-  - Migrated all 32 call sites 2026-05-30: `TemplateResponse(request, "name.html", {...})`. Removed `starlette<1.0` pin and `fastapi==0.128.8` pin from `requirements.in`; regenerated lock and txt. Now on starlette 1.2.1 / fastapi 0.136.3.
-- [x] **Narrow CSV-import exception catch** ([app/routes/expenses.py](app/routes/expenses.py))
-  - Narrowed 2026-05-30 to `(ValueError, KeyError, csv.Error, UnicodeDecodeError)`. Moved inline `import logging` and `import csv` to top of file.
 
 ---
 
 ## Phase 2 — Data correctness
 
-- [ ] **Blog slug uniqueness**
-  - Check before insert; reject on collision with 422 + error message
 - [ ] **CSV-import calibration**
   - Real export from each bank you actually use
   - One unit test per parser using a redacted real CSV
@@ -124,10 +74,9 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
   - `app/models/expenses.py`, `app/models/wealth.py`, `app/models/health.py` use manual `try/finally conn.close()`
   - `app/auth.py` also uses the try/finally pattern
 - [ ] **Add `PRAGMA foreign_keys = ON`** to `_connect()` in `expenses.py`, `wealth.py`, `health.py`
-- [ ] **Standardize `DB_PATH`** (note: this is the cleanup; the urgent app.db repoint is in the Critical section above)
+- [ ] **Standardize `DB_PATH`**
 - [ ] **Fix CSRF cookie kwargs** in `app/routes/auth_routes.py` (6 occurrences)
   - Hardcodes `httponly=False, samesite="lax"` instead of `**_CSRF_COOKIE_KWARGS`
-- [ ] **Move inline `import logging`** in `app/routes/expenses.py:108` to top of file
 
 ### Route thinning
 
@@ -138,11 +87,6 @@ These are blockers for a working deploy. The codebase is in a half-finished DB c
 
 - [ ] **Archive or delete `docs/render_standard.md`**
   - References old per-DB files and Render deployment
-- [x] **Fix `deployment_for_dummy.md` line 155**
-  - Resolved 2026-05-30: full rewrite of `deployment_for_dummy.md` after the first real production deploy. New version reflects what was actually done (Dokploy + Traefik) and includes a Common Gotchas section covering nginx port conflict, missing Traefik, starlette/fastapi version drift, rsync staging, and DNS validation. The old stale `sqlite3 data/expenses.db` loop is gone — `init_db.sh` runs automatically via the Dockerfile `CMD`.
-- [x] **Delete `scripts/migrate_to_app_db.py`** once the Critical-section migration run is complete
-- [x] **Archive Hetzner legacy scripts**
-  - Deleted `scripts/deploy.sh` and `scripts/server_setup.sh` 2026-05-30
 
 ---
 
