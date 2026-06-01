@@ -53,17 +53,6 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 ### Dead code removal
 
-- [ ] **Remove `all_categories`**
-  - Remove the import from `app/routes/gallery.py:14`
-  - Delete the `all_categories()` function from `app/models/gallery.py`
-- [ ] **Remove dead model functions**
-  - `get_account()` from `app/models/wealth.py:41`
-  - `delete_item()` from `app/models/library.py:107`
-  - `generate_missing_thumbs()` from `app/services/gallery.py:144`
-- [ ] **Remove or wire up `issue_csrf()`** (`app/auth.py:133`)
-  - Defined but never called — all routes inline token generation
-  - Either delete it or replace the ~30 inline occurrences with calls to it
-  - Pairs with the "central CSRF dependency" intent from Phase 1
 
 ### Pattern consistency
 

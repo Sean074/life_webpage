@@ -129,12 +129,6 @@ CSRF_COOKIE_NAME = "csrf_token"
 _CSRF_COOKIE_KWARGS: dict = {"httponly": False, "samesite": "lax"}
 
 
-def issue_csrf(response: Response) -> str:
-    token = secrets.token_hex(16)
-    response.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
-    return token
-
-
 def verify_csrf(request: Request, csrf_token: str = Form(...)) -> None:
     cookie_token = request.cookies.get(CSRF_COOKIE_NAME, "")
     if not secrets.compare_digest(csrf_token, cookie_token):

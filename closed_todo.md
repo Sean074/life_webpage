@@ -80,5 +80,14 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 - [x] **Remove unused imports**
   - Removed `RedirectResponse` from `app/auth.py` and `timedelta` from `app/routes/expenses.py`. Completed 2026-05-31.
 
+- [x] **Remove `all_categories`**
+  - Removed import from `app/routes/gallery.py` and deleted function from `app/models/gallery.py`. Completed 2026-05-31.
+
+- [x] **Remove dead model functions**
+  - Deleted `get_account()` from `app/models/wealth.py`, `delete_item()` from `app/models/library.py`, and `generate_missing_thumbs()` from `app/services/gallery.py`. Completed 2026-05-31.
+
+- [x] **Remove `issue_csrf()`**
+  - Deleted from `app/auth.py` — was never called; all routes inline token generation. Completed 2026-05-31.
+
 - [x] **Archive Hetzner legacy scripts**
   - Deleted `scripts/deploy.sh` and `scripts/server_setup.sh` 2026-05-30.

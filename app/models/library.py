@@ -104,11 +104,6 @@ def update_item(item_id: int, data: dict):
             _sync_tags(conn, item_id, tags)
 
 
-def delete_item(item_id: int):
-    with _connect() as conn:
-        conn.execute("DELETE FROM library_items WHERE id = ?", (item_id,))
-
-
 def all_tags() -> list[str]:
     with _connect() as conn:
         return [r["name"] for r in conn.execute("SELECT name FROM tags ORDER BY name").fetchall()]

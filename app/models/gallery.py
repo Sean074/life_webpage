@@ -56,11 +56,3 @@ def update_rotation(image_id: int, rotation: int):
         conn.execute(
             "UPDATE gallery_images SET rotation = ? WHERE id = ?", (rotation, image_id)
         )
-
-
-def all_categories() -> list[str]:
-    with _connect() as conn:
-        rows = conn.execute(
-            "SELECT DISTINCT category FROM gallery_images ORDER BY category"
-        ).fetchall()
-        return [r["category"] for r in rows]
