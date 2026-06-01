@@ -121,9 +121,11 @@ def create_post(slug: str, title: str, date: str, tags: str, body: str) -> None:
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", slug):
         raise ValueError(f"Invalid slug: {slug!r}")
     os.makedirs(POSTS_DIR, exist_ok=True)
+    path = os.path.join(POSTS_DIR, f"{slug}.md")
+    if os.path.exists(path):
+        raise FileExistsError(slug)
     tags_clean = ", ".join(t.strip() for t in tags.split(",") if t.strip())
     content = f"---\ntitle: {title}\ndate: {date}\ntags: {tags_clean}\ndraft: false\n---\n\n{body}"
-    path = os.path.join(POSTS_DIR, f"{slug}.md")
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 

@@ -87,7 +87,20 @@ async def blog_new_post(
         return resp
 
     post_date = date_str or str(date.today())
-    blog_svc.create_post(slug_clean, title.strip(), post_date, tags, body.strip())
+    try:
+        blog_svc.create_post(slug_clean, title.strip(), post_date, tags, body.strip())
+    except FileExistsError:
+        errors["slug"] = "A post with this slug already exists."
+        new_csrf = secrets.token_hex(16)
+        resp = templates.TemplateResponse(request, "blog/new.html", {
+            "user": user,
+            "active": "blog",
+            "csrf_token": new_csrf,
+            "errors": errors,
+            "values": {"title": title, "slug": slug, "date": date_str, "tags": tags, "body": body},
+        }, status_code=422)
+        resp.set_cookie(CSRF_COOKIE_NAME, new_csrf, **_CSRF_COOKIE_KWARGS)
+        return resp
     return RedirectResponse(f"/blog/{slug_clean}", status_code=303)
 
 
