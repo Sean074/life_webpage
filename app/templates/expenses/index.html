@@ -78,26 +78,6 @@
   </details>
 
   <details class="admin-panel">
-    <summary>Import CSV</summary>
-    <form method="post" action="/expenses/import" class="inline-form" enctype="multipart/form-data">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <div class="form-row">
-        <label>Bank format</label>
-        <select name="bank">
-          {% for b in bank_options %}
-          <option value="{{ b }}">{{ b.replace('_', ' ') }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-row">
-        <label>CSV file</label>
-        <input type="file" name="file" accept=".csv" required>
-      </div>
-      <button type="submit" class="btn btn-primary">import</button>
-    </form>
-  </details>
-
-  <details class="admin-panel">
     <summary>Manage categories</summary>
     <form method="post" action="/expenses/categories" class="inline-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

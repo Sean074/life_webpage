@@ -6,9 +6,6 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 ## Phase 2 — Data correctness
 
-- [ ] **CSV-import calibration**
-  - Real export from each bank you actually use
-  - One unit test per parser using a redacted real CSV
 - [ ] **Wealth projection regression test**
   - One scenario with known inputs and hand-computed expected outputs
   - These numbers inform real financial decisions — they need to be auditable

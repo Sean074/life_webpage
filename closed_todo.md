@@ -71,6 +71,9 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ## Phase 2 — Data correctness
 
+- [x] **CSV-import calibration** — 2026-06-06
+  - Feature removed entirely. Switched to manual expense entry only. Deleted `app/services/expenses.py`, removed `POST /expenses/import` route, and removed the Import CSV panel from the template.
+
 - [x] **Blog slug uniqueness**
   - `app/routes/blog.py:93` — checks for existing slug before insert; rejects collision with 422 + error message in the form. Completed in commit `dc40127`.
 
