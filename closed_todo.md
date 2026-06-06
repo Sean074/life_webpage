@@ -4,6 +4,13 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ---
 
+## Critical — remaining
+
+- [x] **⚠️ Verify `backup.sh` is actually scheduled** — 2026-06-06
+  - Host cron installed on VPS (`0 2 * * * docker exec ...`). Manual dry-run confirmed: `2026-06-06` backup directory created under `/var/lib/dokploy/volumes/life-data/backups/`. Added `scripts/setup_cron.sh` (idempotent installer) and Step 9 to `docs/deploy.md`.
+
+---
+
 ## Critical — DB consolidation & deploy readiness
 
 - [x] **⚠️ Repoint `app/auth.py` at `app.db`**
@@ -44,6 +51,9 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 ---
 
 ## Phase 1 — Security & operability
+
+- [x] **Production env in Dokploy** — 2026-06-06
+  - Set `HTTPS_ONLY=true` in Dokploy environment tab; confirmed fresh `SECRET_KEY` set (not copied from `.env`).
 
 - [x] **Validate `session_version` in `get_current_user`**
   - Verified 2026-05-30: `auth.py:77` compares cookie version against DB row; `admin.py` password-change increments the column and re-issues the cookie. Working correctly.

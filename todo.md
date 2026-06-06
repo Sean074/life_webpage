@@ -4,23 +4,6 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 ---
 
-## ⚠️ Critical — remaining
-
-- [ ] **⚠️ Verify `backup.sh` is actually scheduled**
-  - The script is correct; nothing in the repo wires it to a schedule
-  - On Dokploy: either a sidecar cron container, host cron on the VPS that `docker exec`s in, or a Dokploy scheduled task
-  - Verify by waiting 24h and confirming a timestamped directory appears under `/var/lib/dokploy/volumes/life-data/backups/`
-
----
-
-## Phase 1 — Security & operability (remaining)
-
-- [ ] **Production env in Dokploy**
-  - Set `HTTPS_ONLY=true` in the Dokploy environment tab
-  - Confirm `SECRET_KEY` is fresh, not copied from `.env`
-
----
-
 ## Phase 2 — Data correctness
 
 - [ ] **CSV-import calibration**
