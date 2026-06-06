@@ -11,7 +11,6 @@ from app.auth import (
     verify_csrf,
 )
 from app.services import gallery as gallery_svc
-from app.models.gallery import all_categories
 from app.templates_config import templates
 
 router = APIRouter()
@@ -29,8 +28,7 @@ async def gallery_index(request: Request):
         images = gallery_svc.get_all_images()
         cat_filter = None
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("gallery/index.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "gallery/index.html", {
         "user": user,
         "active": "gallery",
         "images": images,
@@ -45,8 +43,7 @@ async def gallery_index(request: Request):
 @router.get("/gallery/upload", response_class=HTMLResponse)
 async def gallery_upload_get(request: Request, user=Depends(require_admin)):
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("gallery/upload.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "gallery/upload.html", {
         "user": user,
         "active": "gallery_upload",
         "categories": CATEGORIES,
@@ -82,8 +79,7 @@ async def gallery_upload_post(
 
     if errors:
         new_csrf = secrets.token_hex(16)
-        resp = templates.TemplateResponse("gallery/upload.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "gallery/upload.html", {
             "user": user,
             "active": "gallery_upload",
             "categories": CATEGORIES,

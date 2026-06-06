@@ -109,6 +109,34 @@ rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/
 
 ---
 
+### 9. Schedule the Nightly Backup
+
+SSH into the VPS as root and run the setup script:
+
+```bash
+ssh root@<server-ip>
+bash /path/to/repo/scripts/setup_cron.sh
+```
+
+Or copy-paste the one-liner directly:
+
+```bash
+(crontab -l 2>/dev/null; echo "0 2 * * * docker exec \$(docker ps -q -f name=life) bash /app/scripts/backup.sh >> /var/log/life-backup.log 2>&1") | crontab -
+```
+
+Verify it was installed: `crontab -l`
+
+Then do a manual dry-run to confirm the script works before waiting 24 hours:
+
+```bash
+docker exec $(docker ps -q -f name=life) bash /app/scripts/backup.sh
+ls /var/lib/dokploy/volumes/life-data/backups/
+```
+
+A dated directory should appear. After 24 hours a second directory confirms the cron is running.
+
+---
+
 ### Ongoing Operations
 
 | Task | How |

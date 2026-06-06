@@ -6,7 +6,6 @@ from typing import Optional
 
 import bcrypt
 from fastapi import Depends, Form, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse
 from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 
 DB_PATH = Path(__file__).parent.parent / "data" / "app.db"
@@ -128,12 +127,6 @@ def verify_pending_2fa(request: Request) -> Optional[int]:
 
 CSRF_COOKIE_NAME = "csrf_token"
 _CSRF_COOKIE_KWARGS: dict = {"httponly": False, "samesite": "lax"}
-
-
-def issue_csrf(response: Response) -> str:
-    token = secrets.token_hex(16)
-    response.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
-    return token
 
 
 def verify_csrf(request: Request, csrf_token: str = Form(...)) -> None:

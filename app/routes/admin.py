@@ -83,8 +83,7 @@ def _account_response(request, user, full_user, token, message=None, error=None,
     qr_b64 = None
     if full_user["totp_secret"] and not full_user["totp_enabled"]:
         qr_b64 = _totp_qr_b64(user["username"], full_user["totp_secret"])
-    resp = templates.TemplateResponse("admin/account.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "admin/account.html", {
         "user": user,
         "active": "account",
         "csrf_token": token,

@@ -103,6 +103,16 @@ scripts/
 
 **Visual style:** All webpages MUST follow `docs/visual_style.md`. This covers palette, typography, layout, navigation, and every UI component. Do not deviate from it.
 
+## Task Tracking
+
+**`todo.md` MUST be updated upon completion of any action listed in it.** When a task is done:
+
+1. Mark it `[x]` in `todo.md` with a brief completion note (date + what was done).
+2. Move the completed entry to `closed_todo.md` (append under the appropriate phase section).
+3. Remove it from `todo.md`.
+
+Do this before ending the session — never leave a finished task unmarked or sitting in `todo.md`.
+
 ## Key Conventions
 
 - Routes must stay thin — business logic in service modules.

@@ -38,15 +38,6 @@ def get_accounts() -> list[dict]:
         conn.close()
 
 
-def get_account(account_id: int) -> dict | None:
-    conn = _connect()
-    try:
-        row = conn.execute("SELECT * FROM wealth_accounts WHERE id = ?", (account_id,)).fetchone()
-        return dict(row) if row else None
-    finally:
-        conn.close()
-
-
 def upsert_account(name: str, balance: float, type_: str, institution: str, last_updated: str, account_id: int | None = None) -> int:
     conn = _connect()
     try:

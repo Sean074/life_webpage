@@ -139,11 +139,3 @@ def remove_image(image_id: int):
 def random_gallery_thumbs(n: int = 3) -> list[dict]:
     images = get_all_images()
     return random.sample(images, min(n, len(images)))
-
-
-def generate_missing_thumbs():
-    for img in gallery_model.get_all_images():
-        src = IMAGES_ROOT / img["category"] / img["filename"]
-        thumb = IMAGES_ROOT / "thumbs" / img["category"] / img["filename"]
-        if src.exists() and not thumb.exists():
-            _make_thumb(src, thumb)

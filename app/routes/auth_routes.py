@@ -79,8 +79,7 @@ async def login_get(request: Request):
     if get_current_user(request):
         return RedirectResponse("/", status_code=303)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("login.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "login.html", {
         "user": None,
         "active": "login",
         "csrf_token": token,
@@ -102,8 +101,7 @@ async def login_post(
 
     if _is_rate_limited(ip):
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,
@@ -116,8 +114,7 @@ async def login_post(
     if not user or not verify_password(password, user["password_hash"]):
         _record_failure(ip)
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,
@@ -142,8 +139,7 @@ async def login_2fa_get(request: Request):
     if not verify_pending_2fa(request):
         return RedirectResponse("/login", status_code=303)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("login_totp.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "login_totp.html", {
         "user": None,
         "active": "login",
         "csrf_token": token,
@@ -164,8 +160,7 @@ async def login_2fa_post(
 
     if _is_rate_limited(ip):
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login_totp.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login_totp.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,
@@ -185,8 +180,7 @@ async def login_2fa_post(
     if not pyotp.TOTP(user["totp_secret"]).verify(code.strip()):
         _record_failure(ip)
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login_totp.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login_totp.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,
@@ -207,8 +201,7 @@ async def login_recovery_get(request: Request):
     if not verify_pending_2fa(request):
         return RedirectResponse("/login", status_code=303)
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("login_recovery.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "login_recovery.html", {
         "user": None,
         "active": "login",
         "csrf_token": token,
@@ -229,8 +222,7 @@ async def login_recovery_post(
 
     if _is_rate_limited(ip):
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login_recovery.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login_recovery.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,
@@ -271,8 +263,7 @@ async def login_recovery_post(
     if matched_id is None:
         _record_failure(ip)
         new_token = secrets.token_hex(16)
-        resp = templates.TemplateResponse("login_recovery.html", {
-            "request": request,
+        resp = templates.TemplateResponse(request, "login_recovery.html", {
             "user": None,
             "active": "login",
             "csrf_token": new_token,

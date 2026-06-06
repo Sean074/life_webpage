@@ -1,4 +1,6 @@
-from datetime import date, timedelta
+import csv
+import logging
+from datetime import date
 
 import secrets
 
@@ -25,8 +27,7 @@ def _month_label(months_ago: int) -> str:
 @router.get("", response_class=HTMLResponse)
 async def expenses_index(request: Request, user: dict = Depends(require_auth)):
     token = secrets.token_hex(16)
-    resp = templates.TemplateResponse("expenses/index.html", {
-        "request": request,
+    resp = templates.TemplateResponse(request, "expenses/index.html", {
         "user": user,
         "active": "expenses",
         "csrf_token": token,
@@ -104,8 +105,7 @@ async def import_csv(
     try:
         transactions = expenses_svc.parse_csv(bank, contents)
         expenses_svc.bulk_import(transactions)
-    except Exception as exc:
-        import logging
+    except (ValueError, KeyError, csv.Error, UnicodeDecodeError) as exc:
         logging.getLogger(__name__).error("CSV import error: %s", exc)
         return HTMLResponse("Import failed: check file format.", status_code=400)
     return RedirectResponse("/expenses", status_code=303)
