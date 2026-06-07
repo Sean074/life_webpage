@@ -113,19 +113,41 @@ hr {
   text-decoration: underline;
 }
 
-@media (max-width: 480px) {
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+@media (max-width: 600px) {
   .nav {
     height: auto;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
     padding: 0.75rem 1.5rem;
-    gap: 0.5rem;
+    gap: 0;
+  }
+
+  .nav-toggle {
+    display: flex;
+    align-items: center;
   }
 
   .nav-links {
+    display: none;
     flex-direction: column;
     gap: 0.4rem;
     align-items: flex-start;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .nav-links.open {
+    display: flex;
   }
 }
 
@@ -669,4 +691,49 @@ tr.retirement-row td {
 
 canvas {
   margin-bottom: 2rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* Today page */
+.today-totals {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.today-total-label {
+  font-size: 0.875rem;
+  color: var(--muted);
+  display: block;
+}
+
+.today-total-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.week-tracker {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.week-day {
+  text-align: center;
+  min-width: 52px;
+}
+
+.week-day-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: block;
+}
+
+.week-day-status {
+  font-size: 0.875rem;
 }

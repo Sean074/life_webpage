@@ -7,6 +7,7 @@
   <p><small>{{ incomplete_ids|length }} item(s) with missing fields are shown in muted text.</small></p>
 {% endif %}
 
+<div class="table-scroll">
 <table>
   <thead>
     <tr>
@@ -37,6 +38,7 @@
     {% endfor %}
   </tbody>
 </table>
+</div>
 
 <p><a href="/library">&larr; Library</a></p>
 {% endblock %}

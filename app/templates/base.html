@@ -9,18 +9,28 @@
 <body>
   <nav class="nav">
     <a class="nav-brand" href="/">Sean O'Meara</a>
+    <button class="nav-toggle" aria-label="Toggle navigation">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="2" y1="5" x2="18" y2="5"/>
+        <line x1="2" y1="10" x2="18" y2="10"/>
+        <line x1="2" y1="15" x2="18" y2="15"/>
+      </svg>
+    </button>
     <div class="nav-links">
       <a href="/blog"{% if active == 'blog' %} class="active"{% endif %}>Blog</a>
       <a href="/gallery"{% if active == 'gallery' %} class="active"{% endif %}>Gallery</a>
       {% if user %}
+        <a href="/today"{% if active == 'today' %} class="active"{% endif %}>Today</a>
         {% if user.role == 'admin' %}
           <a href="/gallery/upload"{% if active == 'gallery_upload' %} class="active"{% endif %}>Upload</a>
-          <a href="/admin/account"{% if active == 'account' %} class="active"{% endif %}>Account</a>
         {% endif %}
         <a href="/library"{% if active == 'library' %} class="active"{% endif %}>Library</a>
         <a href="/expenses"{% if active == 'expenses' %} class="active"{% endif %}>Expenses</a>
         <a href="/wealth"{% if active == 'wealth' %} class="active"{% endif %}>Wealth</a>
         <a href="/health"{% if active == 'health' %} class="active"{% endif %}>Health</a>
+        {% if user.role == 'admin' %}
+          <a href="/admin/account"{% if active == 'account' %} class="active"{% endif %}>Account</a>
+        {% endif %}
         <a href="/logout">Logout</a>
       {% else %}
         <a href="/login"{% if active == 'login' %} class="active"{% endif %}>Login</a>
@@ -47,5 +57,17 @@
       <cite>&#8212; {{ quote.author }}{% if quote.source %}, <em>{{ quote.source }}</em>{% endif %}</cite>
     </blockquote>
   </footer>
+  <script>
+    document.querySelector('.nav-toggle').addEventListener('click', function () {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+      var d = new Date();
+      var local = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+      document.querySelectorAll('input[type="date"]').forEach(function (el) {
+        if (!el.value) el.value = local;
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Today — Sean O'Meara{% endblock %}
+
+{% block content %}
+
+<h1>Today</h1>
+
+<!-- ── Expense totals ──────────────────────────────── -->
+<div class="today-totals">
+  <div>
+    <span class="today-total-label">Today</span>
+    <span class="today-total-value">${{ "%.2f"|format(today_total) }}</span>
+  </div>
+  <div>
+    <span class="today-total-label">This week ({{ week_label }})</span>
+    <span class="today-total-value">${{ "%.2f"|format(week_total) }}</span>
+  </div>
+  <div>
+    <span class="today-total-label">{{ month_label }}</span>
+    <span class="today-total-value">${{ "%.2f"|format(month_total) }}</span>
+  </div>
+</div>
+
+<!-- ── Health tracker (last 7 days) ───────────────── -->
+<h2>Health — last 7 days</h2>
+<div class="week-tracker">
+  {% for day in week_tracker %}
+  <div class="week-day">
+    <span class="week-day-label">{{ day.label }}{% if day.is_today %} *{% endif %}</span>
+    <span class="week-day-status">{% if day.logged %}ok{% else %}—{% endif %}</span>
+  </div>
+  {% endfor %}
+</div>
+
+{% if user.role == 'admin' %}
+
+<!-- ── Log expense ─────────────────────────────────── -->
+<h2>Log expense</h2>
+<form method="post" action="/today/expense" class="inline-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="form-row">
+    <label>Date</label>
+    <input type="date" name="txn_date" required>
+  </div>
+  <div class="form-row">
+    <label>Amount ($)</label>
+    <input type="number" name="amount" step="0.01" min="0" required>
+  </div>
+  <div class="form-row">
+    <label>Description</label>
+    <input type="text" name="description">
+  </div>
+  <div class="form-row">
+    <label>Category</label>
+    <select name="category">
+      {% for cat in categories %}
+      <option value="{{ cat.name }}">{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label>Account</label>
+    <input type="text" name="account">
+  </div>
+  <button type="submit" class="btn btn-primary">add</button>
+</form>
+
+<!-- ── Log health ──────────────────────────────────── -->
+<h2>Log health</h2>
+<form method="post" action="/today/health" class="inline-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="form-row">
+    <label>Date</label>
+    <input type="date" name="record_date" required>
+  </div>
+  <div class="form-row">
+    <label>Meals cooked</label>
+    <select name="meals_cooked" required>
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label>Exercise (hrs)</label>
+    <input type="number" name="exercise_hours" value="0" step="0.25" min="0" required>
+  </div>
+  <div class="form-row">
+    <label>Drinks</label>
+    <input type="number" name="drinks" value="0" step="1" min="0" required>
+  </div>
+  <div class="form-row">
+    <label>Art (hrs)</label>
+    <input type="number" name="art_hours" value="0" step="0.25" min="0" required>
+  </div>
+  <div class="form-row">
+    <label>Reading (hrs)</label>
+    <input type="number" name="read_hours" value="0" step="0.25" min="0" required>
+  </div>
+  <div class="form-row">
+    <label>TV (hrs)</label>
+    <input type="number" name="tv_hours" value="0" step="0.25" min="0" required>
+  </div>
+  <button type="submit" class="btn btn-primary">save</button>
+</form>
+
+{% endif %}
+
+{% endblock %}

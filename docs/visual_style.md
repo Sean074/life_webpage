@@ -59,7 +59,7 @@ No gradients. No shadows (except a single 1px border-bottom where a shadow might
 - Top bar: site name on the left (plain text, no logo), nav links on the right.
 - Active link: underlined, no other treatment.
 - Restricted links (Library, Expenses, Wealth, Health) do not appear in the nav for unauthenticated users.
-- No hamburger menus — if nav overflows at small widths, stack it vertically below the site name.
+- At ≤600px a hamburger toggle button (plain SVG, `currentColor`, no JS library) collapses the nav-links. Clicking the button toggles an `.open` class that shows/hides the link list. No off-canvas drawer — links simply expand below the site name.
 
 ---
 

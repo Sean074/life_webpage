@@ -60,10 +60,9 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 **Goal:** The app is something you'd actually open daily.
 
-- [ ] **Mobile pass on all restricted pages**
-  - Narrow viewport, large tap targets
-  - Table-to-card collapse where needed (Expenses transactions especially)
-  - Test on the actual phone you'll use, not just Chrome DevTools
+- [ ] **Test mobile on actual Samsung phone**
+  - Verify hamburger toggle, Today page, table scroll, chart heights
+  - Mobile review findings addressed: hamburger nav, chart heights 80→200px, table scroll containers, Account username display, Today page with totals and 7-day tracker
 - [ ] **Smoke test script** (`scripts/smoke.sh`)
   - Hits each public route, performs a login, hits one restricted GET
   - Run after every deploy

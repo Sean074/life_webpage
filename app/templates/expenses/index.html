@@ -26,7 +26,7 @@
   <!-- ── Charts ─────────────────────────────────────────── -->
   {% if cat_totals %}
   <h2>Spending by category</h2>
-  <canvas id="chart-categories" height="80"></canvas>
+  <canvas id="chart-categories" height="200"></canvas>
   {% endif %}
 
   {% if monthly %}
@@ -39,7 +39,7 @@
       {% endfor %}
     </select>
   </div>
-  <canvas id="chart-monthly" height="80"></canvas>
+  <canvas id="chart-monthly" height="200"></canvas>
   {% endif %}
 
   <!-- ── Admin panel ────────────────────────────────────── -->
@@ -114,6 +114,7 @@
   <details class="projection-detail">
     <summary>Show all transactions</summary>
     {% if transactions %}
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -179,6 +180,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
     {% else %}
     <p class="muted">No transactions yet.</p>
     {% endif %}

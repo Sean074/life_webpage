@@ -5,6 +5,8 @@
 {% block content %}
 <h1>Account</h1>
 
+<p>Logged in as: <strong>{{ user.username }}</strong></p>
+
 {% set msg = request.query_params.get('message') or message %}
 {% if msg == 'password_changed' %}
 <p class="success">Password updated. Other sessions have been signed out.</p>

@@ -104,3 +104,16 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 - [x] **Archive Hetzner legacy scripts**
   - Deleted `scripts/deploy.sh` and `scripts/server_setup.sh` 2026-05-30.
+
+---
+
+## Phase 3 — Usability
+
+- [x] **Mobile pass on all restricted pages** — 2026-06-06
+  - Hamburger nav (SVG toggle, `.open` class, no JS library). Chart heights increased 80→200px. Table horizontal scroll containers on Expenses, Health, Wealth, Library. `user.username` display added to Account page. All covered by mobile review findings.
+
+- [x] **"Today" page** — 2026-06-06
+  - `/today` route (require_auth GET, require_admin POST). Shows expense totals for today/week(Sat-Fri)/month, 7-day health tracker with logged/missed indicators, quick expense and health entry forms.
+
+- [x] **JS local date defaults** — 2026-06-06
+  - Inline script in `base.html` sets all `input[type=date]` fields with no value to browser local date, fixing UTC-vs-local mismatch for form defaults.
