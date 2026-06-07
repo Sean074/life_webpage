@@ -121,6 +121,11 @@ hr {
   padding: 0.25rem;
   color: var(--text);
   line-height: 1;
+  touch-action: manipulation;
+}
+
+.nav-toggle svg {
+  pointer-events: none;
 }
 
 @media (max-width: 600px) {
