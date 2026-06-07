@@ -4,6 +4,13 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ---
 
+## Critical — remaining
+
+- [x] **⚠️ Verify `backup.sh` is actually scheduled** — 2026-06-06
+  - Host cron installed on VPS (`0 2 * * * docker exec ...`). Manual dry-run confirmed: `2026-06-06` backup directory created under `/var/lib/dokploy/volumes/life-data/backups/`. Added `scripts/setup_cron.sh` (idempotent installer) and Step 9 to `docs/deploy.md`.
+
+---
+
 ## Critical — DB consolidation & deploy readiness
 
 - [x] **⚠️ Repoint `app/auth.py` at `app.db`**
@@ -45,6 +52,9 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ## Phase 1 — Security & operability
 
+- [x] **Production env in Dokploy** — 2026-06-06
+  - Set `HTTPS_ONLY=true` in Dokploy environment tab; confirmed fresh `SECRET_KEY` set (not copied from `.env`).
+
 - [x] **Validate `session_version` in `get_current_user`**
   - Verified 2026-05-30: `auth.py:77` compares cookie version against DB row; `admin.py` password-change increments the column and re-issues the cookie. Working correctly.
 
@@ -60,6 +70,9 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 ---
 
 ## Phase 2 — Data correctness
+
+- [x] **CSV-import calibration** — 2026-06-06
+  - Feature removed entirely. Switched to manual expense entry only. Deleted `app/services/expenses.py`, removed `POST /expenses/import` route, and removed the Import CSV panel from the template.
 
 - [x] **Blog slug uniqueness**
   - `app/routes/blog.py:93` — checks for existing slug before insert; rejects collision with 422 + error message in the form. Completed in commit `dc40127`.
@@ -91,3 +104,16 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 - [x] **Archive Hetzner legacy scripts**
   - Deleted `scripts/deploy.sh` and `scripts/server_setup.sh` 2026-05-30.
+
+---
+
+## Phase 3 — Usability
+
+- [x] **Mobile pass on all restricted pages** — 2026-06-06
+  - Hamburger nav (SVG toggle, `.open` class, no JS library). Chart heights increased 80→200px. Table horizontal scroll containers on Expenses, Health, Wealth, Library. `user.username` display added to Account page. All covered by mobile review findings.
+
+- [x] **"Today" page** — 2026-06-06
+  - `/today` route (require_auth GET, require_admin POST). Shows expense totals for today/week(Sat-Fri)/month, 7-day health tracker with logged/missed indicators, quick expense and health entry forms.
+
+- [x] **JS local date defaults** — 2026-06-06
+  - Inline script in `base.html` sets all `input[type=date]` fields with no value to browser local date, fixing UTC-vs-local mismatch for form defaults.

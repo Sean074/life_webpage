@@ -1,15 +1,11 @@
-import csv
-import logging
+import secrets
 from datetime import date
 
-import secrets
-
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.auth import CSRF_COOKIE_NAME, _CSRF_COOKIE_KWARGS, require_admin, require_auth, verify_csrf
 from app.models import expenses as expenses_model
-from app.services import expenses as expenses_svc
 from app.templates_config import templates
 
 router = APIRouter(prefix="/expenses")
@@ -39,7 +35,6 @@ async def expenses_index(request: Request, user: dict = Depends(require_auth)):
         "monthly": expenses_model.get_monthly_totals(),
         "monthly_by_cat": expenses_model.get_monthly_by_category(),
         "cat_totals": expenses_model.get_category_totals(),
-        "bank_options": list(expenses_svc.PARSERS.keys()),
     })
     resp.set_cookie(CSRF_COOKIE_NAME, token, **_CSRF_COOKIE_KWARGS)
     return resp
@@ -89,25 +84,6 @@ async def delete_transaction(
     csrf_token: str = Form(...),
 ):
     expenses_model.delete_transaction(txn_id)
-    return RedirectResponse("/expenses", status_code=303)
-
-
-@router.post("/import")
-async def import_csv(
-    request: Request,
-    user: dict = Depends(require_admin),
-    _csrf: None = Depends(verify_csrf),
-    csrf_token: str = Form(...),
-    bank: str = Form(...),
-    file: UploadFile = File(...),
-):
-    contents = await file.read()
-    try:
-        transactions = expenses_svc.parse_csv(bank, contents)
-        expenses_svc.bulk_import(transactions)
-    except (ValueError, KeyError, csv.Error, UnicodeDecodeError) as exc:
-        logging.getLogger(__name__).error("CSV import error: %s", exc)
-        return HTMLResponse("Import failed: check file format.", status_code=400)
     return RedirectResponse("/expenses", status_code=303)
 
 

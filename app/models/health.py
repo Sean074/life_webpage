@@ -71,6 +71,18 @@ def get_recent_summary(days: int = 7) -> dict:
         conn.close()
 
 
+def get_logged_dates_last_7(today: str) -> list[str]:
+    conn = _connect()
+    try:
+        rows = conn.execute(
+            "SELECT date FROM health_records WHERE date >= date(?, '-6 days') AND date <= ? ORDER BY date",
+            (today, today),
+        ).fetchall()
+        return [r["date"] for r in rows]
+    finally:
+        conn.close()
+
+
 def upsert_record(date: str, meals_cooked: int, exercise_hours: float,
                   drinks: int, art_hours: float, read_hours: float,
                   tv_hours: float = 0) -> int:

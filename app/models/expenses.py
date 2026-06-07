@@ -150,6 +150,43 @@ def get_monthly_by_category() -> list[dict]:
         conn.close()
 
 
+def get_today_total(date: str) -> float:
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type='debit' AND date=?",
+            (date,),
+        ).fetchone()
+        return float(row[0])
+    finally:
+        conn.close()
+
+
+def get_week_total(week_start: str, week_end: str) -> float:
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type='debit' AND date BETWEEN ? AND ?",
+            (week_start, week_end),
+        ).fetchone()
+        return float(row[0])
+    finally:
+        conn.close()
+
+
+def get_month_total(year: int, month: int) -> float:
+    conn = _connect()
+    try:
+        month_str = f"{year:04d}-{month:02d}"
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type='debit' AND strftime('%Y-%m', date)=?",
+            (month_str,),
+        ).fetchone()
+        return float(row[0])
+    finally:
+        conn.close()
+
+
 def get_summary() -> dict:
     conn = _connect()
     try:

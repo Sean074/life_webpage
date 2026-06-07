@@ -46,6 +46,7 @@
 <hr>
 
 {% if items %}
+  <div class="table-scroll">
   <table>
     <thead>
       <tr>
@@ -74,6 +75,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 {% else %}
   <p>No results.</p>
 {% endif %}

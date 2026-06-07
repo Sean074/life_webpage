@@ -46,10 +46,11 @@
 
   <!-- ── Historical chart ─────────────────────────────── -->
   <h2>Net worth over time</h2>
-  <canvas id="history-chart" height="80"></canvas>
+  <canvas id="history-chart" height="200"></canvas>
 
   <details class="projection-detail">
     <summary>Show accounts</summary>
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -102,6 +103,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
 
     {% if user.role == 'admin' %}
     <details class="admin-panel">
@@ -166,10 +168,11 @@
   </details>
   {% endif %}
 
-  <canvas id="projection-chart" height="80"></canvas>
+  <canvas id="projection-chart" height="200"></canvas>
 
   <details class="projection-detail">
     <summary>Show projection table</summary>
+    <div class="table-scroll">
     <table class="projection-table">
       <thead>
         <tr>
@@ -192,6 +195,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   </details>
 
 <script src="/static/js/chart.umd.min.js"></script>

@@ -73,22 +73,22 @@
   {% if weekly %}
 
   <h2>Meals cooked</h2>
-  <canvas id="chart-meals" height="80"></canvas>
+  <canvas id="chart-meals" height="200"></canvas>
 
   <h2>Exercise (hrs)</h2>
-  <canvas id="chart-exercise" height="80"></canvas>
+  <canvas id="chart-exercise" height="200"></canvas>
 
   <h2>Drinks</h2>
-  <canvas id="chart-drinks" height="80"></canvas>
+  <canvas id="chart-drinks" height="200"></canvas>
 
   <h2>Art (hrs)</h2>
-  <canvas id="chart-art" height="80"></canvas>
+  <canvas id="chart-art" height="200"></canvas>
 
   <h2>Reading (hrs)</h2>
-  <canvas id="chart-read" height="80"></canvas>
+  <canvas id="chart-read" height="200"></canvas>
 
   <h2>TV (hrs)</h2>
-  <canvas id="chart-tv" height="80"></canvas>
+  <canvas id="chart-tv" height="200"></canvas>
 
   {% endif %}
 
@@ -96,6 +96,7 @@
   <details class="projection-detail">
     <summary>Show all records</summary>
     {% if records %}
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -122,6 +123,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
     {% else %}
     <p class="muted">No records yet.</p>
     {% endif %}

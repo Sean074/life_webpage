@@ -26,7 +26,7 @@
   <!-- ── Charts ─────────────────────────────────────────── -->
   {% if cat_totals %}
   <h2>Spending by category</h2>
-  <canvas id="chart-categories" height="80"></canvas>
+  <canvas id="chart-categories" height="200"></canvas>
   {% endif %}
 
   {% if monthly %}
@@ -39,7 +39,7 @@
       {% endfor %}
     </select>
   </div>
-  <canvas id="chart-monthly" height="80"></canvas>
+  <canvas id="chart-monthly" height="200"></canvas>
   {% endif %}
 
   <!-- ── Admin panel ────────────────────────────────────── -->
@@ -74,26 +74,6 @@
       </div>
       <input type="hidden" name="type" value="debit">
       <button type="submit" class="btn btn-primary">add</button>
-    </form>
-  </details>
-
-  <details class="admin-panel">
-    <summary>Import CSV</summary>
-    <form method="post" action="/expenses/import" class="inline-form" enctype="multipart/form-data">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <div class="form-row">
-        <label>Bank format</label>
-        <select name="bank">
-          {% for b in bank_options %}
-          <option value="{{ b }}">{{ b.replace('_', ' ') }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-row">
-        <label>CSV file</label>
-        <input type="file" name="file" accept=".csv" required>
-      </div>
-      <button type="submit" class="btn btn-primary">import</button>
     </form>
   </details>
 
@@ -134,6 +114,7 @@
   <details class="projection-detail">
     <summary>Show all transactions</summary>
     {% if transactions %}
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -199,6 +180,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
     {% else %}
     <p class="muted">No transactions yet.</p>
     {% endif %}
