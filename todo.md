@@ -1,6 +1,6 @@
 # Life — Path to v1
 
-Updated 2026-05-31. Closed items moved to `closed_todo.md`.
+Updated 2026-06-13. Closed items moved to `closed_todo.md`.
 
 ---
 
@@ -23,6 +23,7 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
   - `mailto:` link to a dedicated alias (e.g. `sean+site@gmail.com` or `contact@yourdomain.com`)
   - LinkedIn / GitHub / professional links on the same page
   - Add to public nav alongside Blog and Gallery
+  - Link to the Projects showcase page (Phase 3)
   - **No form** — avoids SMTP credentials, honeypot/rate-limit code, and another public POST endpoint
 
 ---
@@ -60,6 +61,12 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
 
 **Goal:** The app is something you'd actually open daily.
 
+- [ ] **Projects showcase page** (public)
+  - `GET /projects` — server-rendered page highlighting personal software projects (sbeam, smodal, atmos, 2D flutter, etc.)
+  - Per project: name, one-line blurb, tech tags, status (alpha/beta), and links — repo + a live-demo link where one exists (e.g. smodal on Streamlit Cloud)
+  - Data source: **static** — a `content/projects/` Markdown-with-frontmatter set (mirrors the blog) or a single `projects.yaml` loaded by `app/services/projects.py`. **No GitHub API** — keeps to the no-third-party-scripts / no-external-API rule
+  - Add to public nav alongside Blog, Gallery, Contact; link to it from `/contact`
+  - Optional: one screenshot per project served from `data/images` (reuse the gallery serving path), staying within the spartan aesthetic
 - [ ] **Test mobile on actual Samsung phone**
   - Verify hamburger toggle, Today page, table scroll, chart heights
   - Mobile review findings addressed: hamburger nav, chart heights 80→200px, table scroll containers, Account username display, Today page with totals and 7-day tracker
@@ -101,6 +108,37 @@ Updated 2026-05-31. Closed items moved to `closed_todo.md`.
   - **Do this once before there's irreplaceable data on the live server.**
 - [ ] **Retention policy**
   - Decide and document: keep all expense/wealth history forever, or trim after N years
+
+---
+
+## Phase 5 — Secrets vault (secured)
+
+**Goal:** A private page to store passwords and other sensitive notes, with a stronger security posture than the other restricted areas. Unlike Wealth/Health (plaintext SQLite behind a session cookie), vault contents MUST be encrypted at rest with a key that is not stored beside the data.
+
+**Decision gate (decide before building):** build an encrypted vault (Option A below) **vs.** just use a dedicated password manager (Bitwarden / 1Password / KeePass). A hand-rolled vault is high-stakes to get right — only build if integration / learning / genuinely low-stakes secrets justify it.
+
+### Prerequisites (security hardening — do first)
+
+- [ ] **Stand up a pytest suite** — the crypto round-trip (encrypt → store → decrypt, wrong-passphrase rejection) must not ship untested. Pulls forward the Phase 2 test item.
+- [ ] **Hard-fail on default `SECRET_KEY` in production** ([app/auth.py:17](app/auth.py:17))
+  - Currently only warns; a vault must refuse to start with `dev-secret-change-me` when not in debug.
+- [ ] **Fix CSRF cookie kwargs** (Phase 2.5) before adding more POST forms.
+
+### Build (Option A — encrypted at rest)
+
+- [ ] **Migration `012_vault.sql`** — `secrets` table storing only `label`, `username`, ciphertext, `nonce`, `salt`, `category`, `notes_ciphertext`, timestamps; plus a KDF salt + passphrase verifier. Never store plaintext.
+- [ ] **Crypto module `app/services/vault.py`**
+  - Derive the key from a **separate vault passphrase** (not the login password) via Argon2id (`argon2-cffi`) or scrypt
+  - Encrypt with AES-GCM (`cryptography`) or Fernet
+  - Add the chosen dependency to `requirements.in` (and re-lock)
+- [ ] **Unlock + auto-lock flow**
+  - `POST /admin/vault/unlock` derives the key into a **short, auto-locking** session window (much shorter than the 7-day app session)
+  - Step-up auth: gate behind `require_admin` **plus** a fresh TOTP / password re-entry
+- [ ] **CRUD routes + templates** — list / add / edit / delete secrets; clipboard-copy button (minimal inline JS, allowed); monochrome spartan UI per `docs/visual_style.md`
+- [ ] **Exclude vault rows from `/admin/export`** (Phase 2) and from all logs
+- [ ] **Document recovery** — losing the passphrase means unrecoverable data, by design. Warn explicitly in the UI.
+
+**Caveat (accept consciously):** server-side decryption means plaintext transits server RAM and the passphrase reaches the server. True zero-knowledge would decrypt client-side (WebCrypto), which conflicts with the server-rendered / minimal-JS ethos. For a single-user personal app, server-side with a session-scoped key + encryption at rest is a defensible middle ground.
 
 ---
 
