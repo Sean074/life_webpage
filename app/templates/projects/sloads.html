@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}sloads — Projects — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="project-page">
+  <h1>sloads</h1>
+  <p class="meta">{{ project.tagline }}</p>
+
+  <p>
+    <strong>sloads</strong> is a modern Python replication of the FAR&nbsp;23 LOADS
+    suite (Hal C. McMaster, Aero Science Software; FAA report DOT/FAA/AR-96/46) —
+    the 22-program package that computes the structural design loads a small
+    aircraft must sustain under 14&nbsp;CFR Part&nbsp;23 Subpart&nbsp;C — extended into an
+    initial-concept distributed-loads tool. A concept configuration goes in;
+    per-component and full-airframe distributed <em>ultimate</em> loads come out,
+    exported as solver-ready bulk-data decks for beam-model structural sizing.
+  </p>
+
+  <p>
+    The package is pure calculation with three interchangeable front-ends: a
+    multi-page Streamlit GUI, a command line, and the test suite. One reloadable
+    <code>project.json</code> carries every input. All 22 original suite programs
+    are ported and locked against the manual's printed worked examples to
+    &plusmn;0.1&nbsp;%.
+  </p>
+
+  <h2>The GUI</h2>
+
+  <div class="project-figures">
+    <figure>
+      <img src="/static/img/projects/sloads/vn_envelope.png"
+           alt="V-n flight envelope diagram" loading="lazy" width="800" height="500">
+      <figcaption>Balanced V-n flight envelope — maneuver and gust corners per weight/CG case and altitude.</figcaption>
+    </figure>
+    <figure>
+      <img src="/static/img/projects/sloads/cg_envelope.png"
+           alt="Weight versus CG envelope chart" loading="lazy" width="800" height="500">
+      <figcaption>Weight&ndash;CG envelope of all loadings, with structural limits and required ballast.</figcaption>
+    </figure>
+    <figure>
+      <img src="/static/img/projects/sloads/spanwise_loads.png"
+           alt="Spanwise wing load distribution plot" loading="lazy" width="800" height="500">
+      <figcaption>Net spanwise wing loads — shear, bending and torsion per governing case.</figcaption>
+    </figure>
+    <figure>
+      <img src="/static/img/projects/sloads/speed_altitude.png"
+           alt="Speed-altitude envelope chart" loading="lazy" width="800" height="500">
+      <figcaption>Speed&ndash;altitude envelope — EAS-limited below the shoulder altitude, Mach-limited above.</figcaption>
+    </figure>
+    <figure>
+      <img src="/static/img/projects/sloads/three_view.png"
+           alt="Aircraft three-view planform drawing" loading="lazy" width="800" height="500">
+      <figcaption>Three-view outline generated from the parametric geometry.</figcaption>
+    </figure>
+    <figure>
+      <img src="/static/img/projects/sloads/trim_sweep.png"
+           alt="Balancing tail load versus CG plot" loading="lazy" width="800" height="500">
+      <figcaption>Trim &amp; stability — balancing tail load and static margin swept across the CG range.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Scope of analysis</h2>
+  <ul>
+    <li>Mass properties: weight estimation, weight&ndash;CG envelope with ballast, 3-axis CG and mass moments of inertia.</li>
+    <li>Design airspeeds and limit maneuver load factors (23.335 / 23.337), Mach limit lines, operating-limitation placards.</li>
+    <li>The balanced V-n flight envelope with the balancing horizontal-tail load at every condition &times; CG case &times; altitude.</li>
+    <li>Critical rational flight loads for wing, horizontal tail, vertical tail and fuselage across the whole envelope.</li>
+    <li>Distributed loads: Schrenk spanwise wing air, inertia-relief and net shear / bending / torsion; chordwise tail distribution; aileron, flap and tab loads.</li>
+    <li>Engine-mount loads (torque, side, gyroscopic) and the one-engine-out vertical-tail transient.</li>
+    <li>Ground and landing loads: the full tricycle-gear FAR&nbsp;23.471&ndash;23.499 condition set plus a per-leg gear free-body report.</li>
+    <li>The balanced free-free full-span airplane model — aero and inertia together, closed by a six-DOF rigid-body balance, flight and ground families in one assembled deck.</li>
+  </ul>
+
+  <h2>Outputs</h2>
+  <ul>
+    <li>Every deliverable load is <strong>ultimate</strong>, with the safety factor stated per case from a single governing table.</li>
+    <li>Load-case and station-distribution CSVs; a multi-sheet workbook export.</li>
+    <li>Solver bulk-data decks (<code>GRID</code>/<code>FORCE</code>/<code>MOMENT</code>, plus <code>CONM2</code> mass decks) with global-equilibrium invariants, proven to solve in CI via a round-trip harness.</li>
+    <li>A self-contained LaTeX/PDF loads summary report written for a structural analyst who did not run the analysis.</li>
+  </ul>
+
+  <h2>Verification</h2>
+  <p>
+    The FAR&nbsp;23 core is oracle-locked: every module is tested against the
+    manual's printed worked example to &plusmn;0.1&nbsp;%, with the page citation kept in
+    the test. Concept-mode physics carries stated closure and invariant gates in
+    CI with the same force. sloads is an independent open replication (MIT
+    licence), intended as an educational and exploratory engineering tool —
+    results are not certified for regulated structural design.
+  </p>
+</div>
+{% endblock %}

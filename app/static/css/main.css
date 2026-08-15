@@ -742,3 +742,49 @@ canvas {
 .week-day-status {
   font-size: 0.875rem;
 }
+
+/* Projects (brochure pages) */
+
+.project-page h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.project-page p,
+.project-page ul {
+  margin-bottom: 1.5rem;
+  max-width: 65ch;
+}
+
+.project-page ul {
+  padding-left: 1.25rem;
+}
+
+.project-page li {
+  margin-bottom: 0.375rem;
+}
+
+.project-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-figures figure {
+  margin: 0;
+}
+
+.project-figures img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.project-figures figcaption {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}

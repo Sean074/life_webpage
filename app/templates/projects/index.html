@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Projects — Sean O'Meara{% endblock %}
+
+{% block content %}
+<h1>Projects</h1>
+<p class="meta">Engineering software.</p>
+
+<ul class="post-list">
+  {% for p in projects %}
+  <li class="post-item">
+    <h2><a href="/projects/{{ p.slug }}">{{ p.name }}</a></h2>
+    <p>{{ p.tagline }}</p>
+    <a href="/projects/{{ p.slug }}" class="read-more">Read &rarr;</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

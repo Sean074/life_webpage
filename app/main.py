@@ -23,6 +23,7 @@ from app.routes.expenses import router as expenses_router
 from app.routes.wealth import router as wealth_router
 from app.routes.health import router as health_router
 from app.routes.today import router as today_router
+from app.routes.projects import router as projects_router
 from app.services.blog import get_recent_posts
 from app.templates_config import templates
 
@@ -49,6 +50,7 @@ app.include_router(expenses_router)
 app.include_router(wealth_router)
 app.include_router(health_router)
 app.include_router(today_router)
+app.include_router(projects_router)
 
 
 @app.exception_handler(StarletteHTTPException)
