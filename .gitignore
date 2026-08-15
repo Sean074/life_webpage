@@ -35,3 +35,6 @@ data/
 *.png
 *.webp
 *.gif
+# App-owned images (project brochure figures) — deliberate exception to the
+# personal-media ignores above; these are app assets and must ship in the image
+!app/static/img/**/*.png
