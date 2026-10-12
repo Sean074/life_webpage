@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}Russian Atelier Year — Projects — Sean O'Meara{% endblock %}
+
+{% block content %}
+<div class="project-page">
+  <h1>Russian Atelier Year</h1>
+  <p class="meta">{{ project.tagline }}</p>
+
+  <p>
+    A twelve-month drawing and painting plan built on the Russian academic
+    tradition: Pavel Chistyakov's constructive drawing (he taught Repin, Serov,
+    Surikov, Polenov and Vrubel), the sculptural modelling of form, diffused and
+    reflected light, and the oil &eacute;tude, carried through to Sargent's direct
+    painting. Pace: 5&ndash;8 hours a week.
+  </p>
+  <p>
+    The plan is tuned to my starting point. My figure drawing and anatomy are
+    ahead of my painting, so construction gets two months and colour gets four.
+  </p>
+
+  <h2>Method</h2>
+  <dl class="atelier-principles">
+    <dt>Construction before detail <span class="meta">построение · postroenie</span></dt>
+    <dd>Place the big shape, axis and proportions with straight lines and comparative measurement before any shading. Chistyakov: start from the general, go to the particular, return to the general.</dd>
+    <dt>Model form by planes <span class="meta">лепка формы · lepka formy</span></dt>
+    <dd>Every form is a set of planes turning from the light. Find where the plane changes and state it; the brushstroke or hatch follows the direction of the form.</dd>
+    <dt>Values are relationships <span class="meta">отношения · otnosheniya</span></dt>
+    <dd>No value is right in isolation. Compare the lightest light with the darkest dark, then everything else between them, always looking at the whole.</dd>
+    <dt>Two families: light and shadow <span class="meta">свет и тень · svet i ten'</span></dt>
+    <dd>Keep everything in light lighter than everything in shadow. The terminator and the core shadow carry the turn; halftones stay close to the light.</dd>
+    <dt>Diffused, bouncing light <span class="meta">рефлекс · refleks</span></dt>
+    <dd>Russian painters favoured soft, natural light with reflected light in the shadows and gentle core shadows, which gives their work its clarity and air. Reflected light never competes with the light side.</dd>
+    <dt>Unity of the whole <span class="meta">цельность · tsel'nost'</span></dt>
+    <dd>At every stage the picture should read as one impression. Squint often. A finished detail that breaks the whole is a mistake, however well painted.</dd>
+    <dt>Character over prettiness <span class="meta">характер · kharakter</span></dt>
+    <dd>The Peredvizhniki portrait aims at the person: the specific tilt of a head, the weight of the hands, the look in the eyes. Likeness comes from structure and gesture first.</dd>
+  </dl>
+
+  <h2>Weekly rhythm</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Session</th><th>Russian term</th><th class="num">Time</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td>Long study</td><td>постановка</td><td class="num">2 &times; 2&ndash;2.5 h</td><td>A set-up from life worked over several sessions. The core of the week.</td></tr>
+      <tr><td>Quick sketches</td><td>наброски</td><td class="num">4 &times; 15 min</td><td>Gesture and movement. Small book, no erasing.</td></tr>
+      <tr><td>Master analysis</td><td>копия</td><td class="num">1 &times; 30&ndash;45 min</td><td>Thumbnail copy or 3-value notan of the month's reference.</td></tr>
+      <tr><td>&Eacute;tude</td><td>этюд</td><td class="num">1 &times; 45&ndash;60 min</td><td>One-sitting oil sketch from life, outdoors when possible.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>The year</h2>
+
+  <h3>Phase I &mdash; Construction <span class="meta">Построение &middot; months 1&ndash;2</span></h3>
+  <p>Shortened to two months because my figure drawing and anatomy are already strong. The focus is a full value range and the head built from planes.</p>
+  <details class="atelier-month">
+    <summary><strong>Month 1. True darks and head planes</strong> <span class="meta">Тональные отношения · value relationships</span></summary>
+    <p>My figure drawing and anatomy are already solid, so Phase I skips the basics and targets what my portfolio needs: a full value range and the head built from planes. Aim to finish in 4–6 weeks.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a planes head (Asaro or similar) under one strong light, in charcoal. State only light and shadow families first, then add the darkest accents: eye sockets, nostrils, under the jaw.</li>
+      <li>Long study 2: a 9‑step value scale in charcoal, then a skull drawing using every step of it.</li>
+      <li>Nabroski: keep my figure habit, 10 two‑minute gestures per session, now with a single dark accent per figure.</li>
+      <li>Analysis: 3‑value notan of Serov's Girl with Peaches and a Repin head study. Compare them with the 3‑value view of two of my own portraits.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Baseline: run three existing pieces (one drawing, one oil still life, one portrait) against the critique checklist below and record the scores</li>
+      <li>A planes head drawing whose value range in a grayscale value check spans at least 2–9</li>
+      <li>A skull drawing using all nine steps of my value scale</li>
+      <li>Notan comparison of two master heads against two of my own</li>
+    </ul>
+    <p class="meta">Study: Girl with Peaches &middot; Head studies and drawings</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 2. The cast head and the living head</strong> <span class="meta">Гипсовая голова · живая голова</span></summary>
+    <p>A long cast head study with Chistyakov's construction, then a life portrait drawing that keeps the same planes and darks while catching the person.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: plaster or cast head over 10–12 hours, charcoal on toned paper. Construction lines first; turn the form plane by plane.</li>
+      <li>Long study 2 (second half of the month): a 4–6 hour portrait drawing from life or a mirror self‑portrait.</li>
+      <li>Nabroski: hands and heads, 3 minutes each.</li>
+      <li>Analysis: master copy of a Serov portrait drawing at the same size.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A finished cast head (10+ hours) with a clean light/shadow split</li>
+      <li>A life portrait drawing that scores 3+ on values and character on the critique checklist</li>
+      <li>Master copy of a Serov or Repin drawing</li>
+      <li>Phase I review: compare my Month 1 baseline scores with my cast head</li>
+    </ul>
+    <p class="meta">Study: Portrait drawings &middot; Head studies and drawings &middot; Portrait of an Unknown Woman</p>
+  </details>
+
+  <h3>Phase II &mdash; Tone and the brush <span class="meta">Тон &middot; months 3&ndash;5</span></h3>
+  <p>Move my drawing strength into oil: grisaille, then a limited palette, ending with a master copy.</p>
+  <details class="atelier-month">
+    <summary><strong>Month 3. Grisaille</strong> <span class="meta">Гризайль · monochrome painting</span></summary>
+    <p>Move my drawing strength into paint: model form with the brush in values only, so the sculpting I already do in charcoal happens in oil.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a white still life (a bottle, an egg, a cloth) in ivory black, raw umber and white. Mix a 9‑step value string first and paint only with it.</li>
+      <li>Long study 2: grisaille of a cast head, the same subject as Month 2, so I can compare drawing and painting directly.</li>
+      <li>Étude: 45‑minute monochrome head or still life, one sitting.</li>
+      <li>Analysis: check each grisaille in grayscale and compare its range with the charcoal version.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A 9‑step value string painted and kept as a tool</li>
+      <li>A finished grisaille still life with clear plane changes on every object</li>
+      <li>A grisaille cast head</li>
+      <li>Four monochrome études</li>
+    </ul>
+    <p class="meta">Study: Portrait of Modest Mussorgsky &middot; Christ in the Desert</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 4. Limited palette heads</strong> <span class="meta">Ограниченная палитра</span></summary>
+    <p>Paint heads with yellow ochre, cadmium red light, ivory black and white, stating big masses first as Serov did. This bridges my monochrome control into colour.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a 3‑session portrait head from life or my own photo, limited palette. Session one is a block‑in of big masses only.</li>
+      <li>Étude: 1‑hour head sketches, one per week, never touched again.</li>
+      <li>Nabroski: figures with a brush and one colour.</li>
+      <li>Analysis: warm–cool comparison of Serov's Yermolova portrait next to my head.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A flesh string mixed in the limited palette: light, halftone, shadow, reflected light</li>
+      <li>A finished 3‑session limited palette head</li>
+      <li>Four 1‑hour études</li>
+      <li>Shadows read as one family in squint view</li>
+    </ul>
+    <p class="meta">Study: Portrait of Maria Yermolova &middot; Girl with Peaches &middot; Portrait of Modest Mussorgsky</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 5. Master copy</strong> <span class="meta">Копия с мастера</span></summary>
+    <p>Copy a head from a Russian master to absorb its drawing, colour temperature and edges.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: copy the head of Girl with Peaches, the Mussorgsky portrait or Kramskoy's Unknown Woman, at reduced size, across the month.</li>
+      <li>Étude: small colour sketches of the same head to test my mixes.</li>
+      <li>Analysis: side‑by‑side comparison every session; compare mirror and squint views.</li>
+      <li>Review: score my copy honestly against the seven principles.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A finished master copy of a Russian portrait head</li>
+      <li>Side‑by‑side comparison with the original, scored and recorded</li>
+      <li>Copy scores 3+ in every checklist category</li>
+      <li>Phase II review: my best three pieces from months 3–5</li>
+    </ul>
+    <p class="meta">Study: Girl with Peaches &middot; Portrait of Modest Mussorgsky &middot; Portrait of an Unknown Woman &middot; Portrait of Maria Lopukhina</p>
+  </details>
+
+  <h3>Phase III &mdash; Colour and light <span class="meta">Цвет и свет &middot; months 6&ndash;9</span></h3>
+  <p>The longest phase, aimed at the biggest gap in my oils: warm–cool relationships, plein‑air études, the colour portrait and direct painting.</p>
+  <details class="atelier-month">
+    <summary><strong>Month 6. Warm and cool still life</strong> <span class="meta">Тёплое и холодное · постановка</span></summary>
+    <p>Open the full palette and fix the gap seen in my oil still lifes: give light and shadow opposite temperatures, and turn each object by planes instead of filling in local colour.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a constructed still life with drapery and two or three objects of different local colour (for example a lemon, a bottle, a red apple), two sessions, one warm light.</li>
+      <li>Long study 2: repaint the same set‑up under a cool window light and compare.</li>
+      <li>Nabroski: 3 × 4 inch colour thumbnails, 10 minutes each.</li>
+      <li>Analysis: warm–cool comparison of my earlier bottle‑and‑fruit painting next to the new one.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Two still lifes of the same set‑up in warm and cool light</li>
+      <li>A warm–cool check shows light and shadow on opposite sides of warm/cool</li>
+      <li>Every object shows light, halftone, core shadow and reflected light</li>
+      <li>Colour scores 3+ on the checklist</li>
+    </ul>
+    <p class="meta">Study: Girl Illuminated by the Sun &middot; Portrait of Maria Lopukhina &middot; Golden Autumn</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 7. Plein‑air études and the key of light</strong> <span class="meta">Этюд на пленэре</span></summary>
+    <p>Learn colour as the Russian landscape painters did: short études outdoors that catch the colour of the light and the colour of the shadow.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Étude: three 45‑minute landscape or street études a week (this month replaces one long study with études).</li>
+      <li>Long study: one larger landscape from my best étude, painted indoors.</li>
+      <li>Nabroski: people outdoors, 3 minutes each.</li>
+      <li>Analysis: colour notes from Levitan, Shishkin and Monet's Haystacks: what is the temperature of the light, shadows and sky?</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Ten plein‑air études</li>
+      <li>One studio landscape developed from an étude</li>
+      <li>Colour notes on a Levitan and a Monet</li>
+      <li>Unity scores 3+ on my best étude</li>
+    </ul>
+    <p class="meta">Study: Golden Autumn &middot; Morning in a Pine Forest &middot; Haystacks (series) &middot; Religious Procession in Kursk Governorate</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 8. Colour portrait from life</strong> <span class="meta">Портрет с натуры</span></summary>
+    <p>Paint a portrait in full colour over several sessions, holding construction, value and temperature together.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a portrait in 3–4 sessions from life (or a carefully lit photo I took). Value thumbnail and colour sketch first.</li>
+      <li>Étude: alla prima heads, 90 minutes.</li>
+      <li>Nabroski: people at rest, 5 minutes each.</li>
+      <li>Analysis: Kramskoy's and Repin's treatment of eyes and the corners of the mouth.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Value thumbnail and colour sketch before the portrait</li>
+      <li>A finished colour portrait from life</li>
+      <li>Three alla prima heads</li>
+      <li>Portrait scores 3+ on character and light</li>
+    </ul>
+    <p class="meta">Study: Portrait of an Unknown Woman &middot; Portrait of Modest Mussorgsky &middot; The Lacemaker &middot; Girl Illuminated by the Sun</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 9. Direct painting: Serov to Sargent</strong> <span class="meta">Прямая живопись · alla prima</span></summary>
+    <p>Fewer, more decisive strokes: big brush, mass painting, edges chosen on purpose.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a head in one 3‑hour sitting using Sargent's method: mass in darks and halftones, then lay the lights into wet paint.</li>
+      <li>Étude: 30‑minute heads with a single large brush.</li>
+      <li>Nabroski: figures in ink wash.</li>
+      <li>Analysis: copy a passage of Sargent (a hand, a sleeve) stroke for stroke.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A one‑sitting head I didn't rework afterwards</li>
+      <li>Ten 30‑minute heads</li>
+      <li>Stroke‑for‑stroke copy of a Sargent passage</li>
+      <li>My three sharpest edges sit at the focal point</li>
+    </ul>
+    <p class="meta">Study: Portrait of Madame X &middot; Dr. Pozzi at Home &middot; The Daughters of Edward Darley Boit &middot; Carnation, Lily, Lily, Rose</p>
+  </details>
+
+  <h3>Phase IV &mdash; Synthesis <span class="meta">Синтез &middot; months 10&ndash;12</span></h3>
+  <p>The figure in oil, composition, and a capstone painting taken from sketch to finish.</p>
+  <details class="atelier-month">
+    <summary><strong>Month 10. The figure in oil</strong> <span class="meta">Фигура в живописи</span></summary>
+    <p>My strongest drawing subject, now in paint: carry my figure gesture and proportion into oil.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: a figure oil sketch from a long pose, limited palette first, 2–3 hours.</li>
+      <li>Long study 2: a figure in full colour over two sessions.</li>
+      <li>Nabroski: 20 a session, some with a brush.</li>
+      <li>Analysis: how Repin gives each body its weight in Barge Haulers.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Three figure oil sketches</li>
+      <li>One finished colour figure painting</li>
+      <li>Gesture study sheet from Barge Haulers</li>
+      <li>Figure painting scores 3+ on planes and light</li>
+    </ul>
+    <p class="meta">Study: Barge Haulers on the Volga &middot; Joan of Arc &middot; Christ in the Desert</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 11. Composition and the eskiz</strong> <span class="meta">Композиция · эскиз</span></summary>
+    <p>Build a narrative picture the way Repin did: many small sketches (эскизы), studies from life, then the composition.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Long study: choose a modest genre subject from my own life; make 10 thumbnail eskizes.</li>
+      <li>Long study 2: life studies for each figure and object in the chosen eskiz.</li>
+      <li>Étude: colour studies of the setting at the time of day I will paint.</li>
+      <li>Analysis: notan and diagonals grid over Repin's Religious Procession, Unexpected Visitors and the Zaporozhian Cossacks.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>Ten composition thumbnails, one chosen</li>
+      <li>Life studies for each element</li>
+      <li>A colour study of the whole composition</li>
+      <li>Grid analysis of two Repin compositions</li>
+    </ul>
+    <p class="meta">Study: Religious Procession in Kursk Governorate &middot; Unexpected Visitors (They Did Not Expect Him) &middot; Reply of the Zaporozhian Cossacks &middot; The Last Day of Pompeii</p>
+  </details>
+  <details class="atelier-month">
+    <summary><strong>Month 12. Capstone painting</strong> <span class="meta">Итоговая работа</span></summary>
+    <p>One painting from eskiz to finish, a portrait or genre scene that uses everything from the year.</p>
+    <p class="meta">Weekly assignment</p>
+    <ul>
+      <li>Weeks 1–3: full‑size cartoon drawing, transfer, monochrome underpainting, then colour.</li>
+      <li>Week 4: finish, then critique: squint, mirror, value and temperature views and the critique checklist.</li>
+      <li>Étude: one a week to stay loose.</li>
+      <li>Review: lay out the year's best work and write what to study next.</li>
+    </ul>
+    <p class="meta">Checkpoints</p>
+    <ul>
+      <li>A full‑size cartoon drawing for the capstone</li>
+      <li>The finished capstone painting</li>
+      <li>Capstone critique saved with an average of 3.5 or higher</li>
+      <li>Year review: compare the Month 1 baseline critiques with the capstone</li>
+    </ul>
+    <p class="meta">Study: Portrait of an Unknown Woman &middot; Girl with Peaches &middot; Portrait of Madame X &middot; Religious Procession in Kursk Governorate</p>
+  </details>
+
+  <h2>References</h2>
+  <p>Public-domain works chosen for what they teach. Links open an image search on Wikimedia Commons.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Artist</th><th>Work</th><th class="num">Year</th><th>Study for</th></tr></thead>
+    <tbody>
+      <tr><td>Valentin Serov</td><td><a href="https://en.wikipedia.org/wiki/Girl_with_Peaches" rel="noopener">Girl with Peaches</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1887</td><td>Diffused window light filling a whole room; cool reflected light from the window on the face; the freshness of a painting Serov said he reworked for weeks to keep looking spontaneous.</td></tr>
+      <tr><td>Valentin Serov</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Serov%20Girl%20Illuminated%20by%20the%20Sun" rel="noopener">Girl Illuminated by the Sun</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1888</td><td>Dappled outdoor light on skin and a white blouse; warm light against cool, green‑influenced shadows.</td></tr>
+      <tr><td>Valentin Serov</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Serov%20portrait%20Yermolova" rel="noopener">Portrait of Maria Yermolova</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1905</td><td>A restrained near‑monochrome palette, monumental silhouette and simplified masses. A lesson in design over detail.</td></tr>
+      <tr><td>Valentin Serov</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Valentin%20Serov%20drawing%20portrait" rel="noopener">Portrait drawings</a><br><span class="meta">Various collections</span></td><td class="num">1890s–1911</td><td>Economy of line; how few marks state a head's structure and character.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Repin%20Mussorgsky%20portrait" rel="noopener">Portrait of Modest Mussorgsky</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1881</td><td>Painted in four sittings days before the composer's death. Unblinking character, plain light, broken colour in the flesh and the dressing gown.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Ilya%20Repin%20drawing%20head%20study" rel="noopener">Head studies and drawings</a><br><span class="meta">Various collections</span></td><td class="num">1870s–1900s</td><td>Academic construction made lively; tonal charcoal and graphite heads that show the Chistyakov planes beneath the likeness.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://en.wikipedia.org/wiki/Barge_Haulers_on_the_Volga" rel="noopener">Barge Haulers on the Volga</a><br><span class="meta">State Russian Museum, St Petersburg</span></td><td class="num">1870–73</td><td>Eleven distinct bodies under one strain; a frieze composition against a high, light sky.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://en.wikipedia.org/wiki/Reply_of_the_Zaporozhian_Cossacks" rel="noopener">Reply of the Zaporozhian Cossacks</a><br><span class="meta">State Russian Museum, St Petersburg</span></td><td class="num">1880–91</td><td>A crowd held together by gesture and a central focus; dozens of distinct characters, each a portrait study.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://en.wikipedia.org/wiki/Religious_Procession_in_Kursk_Governorate" rel="noopener">Religious Procession in Kursk Governorate</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1880–83</td><td>A deep diagonal crowd in outdoor light; dust, air and atmospheric perspective.</td></tr>
+      <tr><td>Ilya Repin</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Repin%20They%20Did%20Not%20Expect%20Him" rel="noopener">Unexpected Visitors (They Did Not Expect Him)</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1884–88</td><td>Narrative told through reactions; cool interior daylight; a room as a stage.</td></tr>
+      <tr><td>Ivan Kramskoy</td><td><a href="https://en.wikipedia.org/wiki/Portrait_of_an_Unknown_Woman" rel="noopener">Portrait of an Unknown Woman</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1883</td><td>The glance from above; crisp rendering of the face against a soft winter background; edges used to direct attention.</td></tr>
+      <tr><td>Ivan Kramskoy</td><td><a href="https://en.wikipedia.org/wiki/Christ_in_the_Desert" rel="noopener">Christ in the Desert</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1872</td><td>A near‑monochrome figure in cool dawn light; tension carried by the clasped hands.</td></tr>
+      <tr><td>Vladimir Borovikovsky</td><td><a href="https://en.wikipedia.org/wiki/Portrait_of_Maria_Lopukhina" rel="noopener">Portrait of Maria Lopukhina</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1797</td><td>Soft transitions and colour echoes between sitter and landscape: the blue sash and cornflowers, the rose.</td></tr>
+      <tr><td>Vasily Tropinin</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Tropinin%20The%20Lacemaker" rel="noopener">The Lacemaker</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1823</td><td>Warm, gentle realism; the turn of the head and the hands at work.</td></tr>
+      <tr><td>Karl Bryullov</td><td><a href="https://en.wikipedia.org/wiki/The_Last_Day_of_Pompeii" rel="noopener">The Last Day of Pompeii</a><br><span class="meta">State Russian Museum, St Petersburg</span></td><td class="num">1830–33</td><td>Academic multi‑figure composition; balanced groups; red lightning light against cool shadow.</td></tr>
+      <tr><td>Isaac Levitan</td><td><a href="https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&amp;type=image&amp;search=Levitan%20Golden%20Autumn%201895" rel="noopener">Golden Autumn</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1895</td><td>The étude spirit at full scale; a warm key with cool blue accents in sky and water.</td></tr>
+      <tr><td>Ivan Shishkin and Konstantin Savitsky</td><td><a href="https://en.wikipedia.org/wiki/Morning_in_a_Pine_Forest" rel="noopener">Morning in a Pine Forest</a><br><span class="meta">State Tretyakov Gallery, Moscow</span></td><td class="num">1889</td><td>Morning mist and atmospheric perspective; the bears were added by Savitsky.</td></tr>
+      <tr><td>John Singer Sargent</td><td><a href="https://en.wikipedia.org/wiki/Portrait_of_Madame_X" rel="noopener">Portrait of Madame X</a><br><span class="meta">Metropolitan Museum of Art, New York</span></td><td class="num">1884</td><td>Silhouette and design; a pale profile against a warm dark ground; minimal modelling.</td></tr>
+      <tr><td>John Singer Sargent</td><td><a href="https://en.wikipedia.org/wiki/Dr._Pozzi_at_Home" rel="noopener">Dr. Pozzi at Home</a><br><span class="meta">Hammer Museum, Los Angeles</span></td><td class="num">1881</td><td>Red on red; the expressive hands; confident direct brushwork.</td></tr>
+      <tr><td>John Singer Sargent</td><td><a href="https://en.wikipedia.org/wiki/The_Daughters_of_Edward_Darley_Boit" rel="noopener">The Daughters of Edward Darley Boit</a><br><span class="meta">Museum of Fine Arts, Boston</span></td><td class="num">1882</td><td>An unconventional square composition with deep interior space; lost edges in the shadows.</td></tr>
+      <tr><td>John Singer Sargent</td><td><a href="https://en.wikipedia.org/wiki/Carnation,_Lily,_Lily,_Rose" rel="noopener">Carnation, Lily, Lily, Rose</a><br><span class="meta">Tate Britain, London</span></td><td class="num">1885–86</td><td>Painted only in the few minutes of twilight each evening; the colour of dusk light on white.</td></tr>
+      <tr><td>Claude Monet</td><td><a href="https://en.wikipedia.org/wiki/Haystacks_(Monet_series)" rel="noopener">Haystacks (series)</a><br><span class="meta">Various collections</span></td><td class="num">1890–91</td><td>One subject, many lights. Use it to train my eye for the colour of light and shadow at different hours.</td></tr>
+      <tr><td>Jules Bastien‑Lepage</td><td><a href="https://en.wikipedia.org/wiki/Joan_of_Arc_(Bastien-Lepage)" rel="noopener">Joan of Arc</a><br><span class="meta">Metropolitan Museum of Art, New York</span></td><td class="num">1879</td><td>Naturalist plein‑air figure painting that Hansen links to the Russian approach; soft diffused light.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Critique checklist</h2>
+  <p>Score 1 (not yet) to 5 (resolved), looking at the work in grayscale, squinted and mirrored.</p>
+  <ul>
+    <li><strong>Construction and proportion</strong> (построение): do the big proportions hold up in a mirror?</li>
+    <li><strong>Form by planes</strong> (лепка формы): can I point to where each plane turns?</li>
+    <li><strong>Value relationships</strong> (тональные отношения): do the big shapes read in three values?</li>
+    <li><strong>Light, shadow, reflected light</strong> (свет, тень, рефлекс): is every light lighter than every shadow?</li>
+    <li><strong>Edges and air</strong> (края, воздух): are the sharpest edges at the focal point?</li>
+    <li><strong>Colour temperature</strong> (тёплое&ndash;холодное): is there a clear warm&ndash;cool idea in light versus shadow?</li>
+    <li><strong>Unity of the whole</strong> (цельность): squinting, does it read as one impression?</li>
+    <li><strong>Character</strong> (характер): is this a specific person, object or place?</li>
+  </ul>
+
+  <h2>Library</h2>
+  <ul>
+    <li>Juliette Aristides, <em>Classical Drawing Atelier</em>, <em>Lessons in Classical Drawing</em>, <em>Classical Painting Atelier</em>, <em>Lessons in Classical Painting</em>.</li>
+    <li>Nikolai Li, <em>Fundamentals of Academic Drawing</em> (Основы учебного академического рисунка).</li>
+    <li>Harold Speed, <em>The Practice and Science of Drawing</em> (1913).</li>
+    <li>Ilya Repin, <em>Far and Near</em> (Далёкое близкое).</li>
+    <li><a href="https://www.aristidesarts.com/aristides-atelier" rel="noopener">Aristides Atelier</a> &mdash; the plan follows its drawing-studio order.</li>
+    <li><a href="https://www.patreon.com/cw/stephenbaumanartwork" rel="noopener">Stephen Bauman</a> &mdash; academic drawing and painting demonstrations.</li>
+    <li><a href="https://medium.com/@jameshansen_29076/what-i-appreciate-most-about-classical-russian-drawings-paintings-f54e820cdfcd" rel="noopener">James Hansen on classical Russian drawing</a>.</li>
+    <li><a href="https://en.wikipedia.org/wiki/List_of_works_by_John_Singer_Sargent" rel="noopener">List of works by John Singer Sargent</a>.</li>
+  </ul>
+  <p>My own work is in the <a href="/gallery">gallery</a>.</p>
+</div>
+{% endblock %}

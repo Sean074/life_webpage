@@ -15,6 +15,11 @@ PROJECTS = [
         "name": "sloads",
         "tagline": "FAR 23 structural design loads — suite replication grown into a concept distributed-loads tool",
     },
+    {
+        "slug": "russian-atelier-year",
+        "name": "Russian Atelier Year",
+        "tagline": "A 12-month drawing and painting plan in the Russian academic tradition — Chistyakov, Repin, Serov, Sargent",
+    },
 ]
 
 
