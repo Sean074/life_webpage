@@ -52,7 +52,7 @@ Updated 2026-06-13. Closed items moved to `closed_todo.md`.
 
 ### Stale file cleanup
 
-- [ ] **Archive or delete `docs/render_standard.md`**
+- [x] **Archive or delete `docs/render_standard.md`** — deleted 21 Oct 2026 (deployment is Dokploy, see `docs/deploy.md`)
   - References old per-DB files and Render deployment
 
 ---
