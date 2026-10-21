@@ -4,63 +4,66 @@
 #
 #    pip-compile --output-file=requirements.txt --strip-extras requirements.in
 #
-annotated-doc==0.0.4
+annotated-doc==0.0.5
     # via fastapi
-annotated-types==0.7.0
+annotated-types==0.8.0
     # via pydantic
-anyio==4.13.0
+anyio==4.15.1
     # via starlette
 bcrypt==5.0.0
     # via -r requirements.in
-bleach==6.3.0
+bleach==6.4.0
     # via -r requirements.in
-click==8.4.1
+click==8.5.0
     # via uvicorn
-fastapi==0.136.3
+fastapi==0.159.1
     # via -r requirements.in
 h11==0.16.0
     # via uvicorn
-idna==3.17
+idna==3.20
     # via anyio
 itsdangerous==2.2.0
     # via -r requirements.in
 jinja2==3.1.6
     # via -r requirements.in
-markdown==3.10.2
+markdown==3.11.2
     # via -r requirements.in
-markupsafe==3.0.3
+markupsafe==3.0.4
     # via jinja2
-pillow==12.2.0
+opentelemetry-api==1.45.1
+    # via fastapi
+pillow==13.0.0
     # via
     #   -r requirements.in
     #   qrcode
-pydantic==2.13.4
+pydantic==2.14.1
     # via fastapi
-pydantic-core==2.46.4
+pydantic-core==2.50.1
     # via pydantic
-pyotp==2.9.0
+pyotp==2.10.0
     # via -r requirements.in
-python-dotenv==1.2.2
+python-dotenv==1.2.4
     # via -r requirements.in
 python-multipart==0.0.32
     # via -r requirements.in
 qrcode==8.2
     # via -r requirements.in
-starlette==1.2.1
+starlette==1.9.0
     # via fastapi
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   anyio
     #   fastapi
+    #   opentelemetry-api
     #   pydantic
     #   pydantic-core
     #   starlette
     #   typing-inspection
-typing-inspection==0.4.2
+typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
-uvicorn==0.48.0
+uvicorn==0.54.0
     # via -r requirements.in
-webencodings==0.5.1
+webencodings==0.6.1
     # via bleach
