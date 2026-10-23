@@ -174,6 +174,9 @@ fastapi==0.159.1 \
     --hash=sha256:49b94c29afec2fca1390e9c39be202c59755d5cda8e4f1148a133761e4313e7e \
     --hash=sha256:b45b1ec57f3aa4d2f80f09bfbcf068b46764a2ee892e56753f35bb3d9d845ce2
     # via -r requirements.in
+flutter2d @ https://github.com/Sean074/30_2DFlutter/archive/refs/tags/v1.0.0.tar.gz \
+    --hash=sha256:4cf22a2915ec9e4e73452b886ccda01daae8f9cf1a4d9f96618c426773223b79
+    # via -r requirements.in
 fonttools==4.67.0 \
     --hash=sha256:0781fe22583529e1e98bb8a3a33040632e202a4c427ed7e65412c41a21b8ebcb \
     --hash=sha256:07a2f36b3263faadf5b7b548f62fd3cac401e490189c82b16f7139ac0df91cd4 \
@@ -604,7 +607,9 @@ matplotlib==3.11.2 \
     --hash=sha256:f25446b2981717dca9786bac841cb3fd7efb568e3e3c755dd980481c5cb9228d \
     --hash=sha256:f2ac30cf5eb5dff1b584627ae0b0e1186551a4f69ae3c75073911da497a29170 \
     --hash=sha256:fea03cf56568cc1cba08b470be6a0559e71c3a5b688d54b7179bb35ba23d0821
-    # via atmos
+    # via
+    #   atmos
+    #   flutter2d
 numpy==2.4.6 \
     --hash=sha256:001fbb8e08d942dd57599e781f2472269ee7f2755fae407b4f67b2f0b17da3f1 \
     --hash=sha256:0280e0356c0829a18d9de1cb7eee50ec22ca639878d7240307ca0943d73cd2c4 \
@@ -681,6 +686,7 @@ numpy==2.4.6 \
     # via
     #   atmos
     #   contourpy
+    #   flutter2d
     #   matplotlib
     #   pandas
 opentelemetry-api==1.45.1 \
