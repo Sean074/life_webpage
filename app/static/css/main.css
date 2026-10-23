@@ -835,3 +835,36 @@ th.num {
 .project-page td.num {
   white-space: nowrap;
 }
+
+/* Project web tools (e.g. /projects/atmos) */
+.tool-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  column-gap: 1rem;
+  max-width: 65ch;
+  margin-bottom: 0.5rem;
+}
+
+.tool-form .form-row {
+  margin-bottom: 1rem;
+}
+
+.tool-submit {
+  align-self: end;
+}
+
+.tool-results {
+  max-width: 65ch;
+  margin-bottom: 1.5rem;
+}
+
+.tool-chart {
+  margin: 0 0 1.5rem;
+}
+
+.tool-chart img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}

@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Matplotlib (ATMOS charts) renders headless and needs a writable cache dir
+ENV MPLBACKEND=Agg MPLCONFIGDIR=/tmp/matplotlib
+
 COPY requirements.lock .
 RUN pip install --no-cache-dir -r requirements.lock
 
