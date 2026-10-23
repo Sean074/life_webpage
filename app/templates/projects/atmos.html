@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}ATMOS — Projects — Sean O'Meara{% endblock %}
+
+{# Sticky form value: the submitted value when this section was the one run, else the default. #}
+{% macro val(section, name, default) -%}
+{{ q.get(name, default) if calc == section else default }}
+{%- endmacro %}
+
+{% macro field_error(result, name) -%}
+{% if result and result.errors and result.errors.get(name) %}<p class="field-error">! {{ result.errors[name] }}</p>{% endif %}
+{%- endmacro %}
+
+{% macro options(choices, selected) -%}
+{% for key, label in choices.items() %}<option value="{{ key }}"{% if key == selected %} selected{% endif %}>{{ label }}</option>{% endfor %}
+{%- endmacro %}
+
+{% macro model_select(section, id, result=None) -%}
+<div class="form-row">
+  <label for="{{ id }}">Atmospheric model</label>
+  <select id="{{ id }}" name="model">{{ options(tool.MODELS, val(section, 'model', tool.DEFAULT_MODEL)) }}</select>
+  {{ field_error(result, 'model') }}
+</div>
+{%- endmacro %}
+
+{% block content %}
+<div class="project-page">
+  <h1>ATMOS</h1>
+  <p class="meta">{{ project.tagline }}</p>
+
+  <p>
+    <strong>ATMOS</strong> is a small standard-atmosphere and air-data tool. It
+    interpolates a tabulated atmospheric model, converts between Mach and true,
+    calibrated and equivalent airspeed (subsonic and supersonic, using the
+    Rayleigh pitot formula above Mach&nbsp;1), and draws speed-altitude charts
+    with optional V<sub>MO</sub>/M<sub>MO</sub>-style envelope boundaries. The
+    desktop version is a terminal program; this page runs the same engine
+    (<a href="https://github.com/Sean074/20_ATMOS">source</a>). Nothing you enter
+    is stored.
+  </p>
+
+  <!-- ── Atmospheric properties ─────────────────────── -->
+  <h2 id="props">Atmospheric properties</h2>
+  <form method="get" action="/projects/atmos#props" class="tool-form">
+    <input type="hidden" name="calc" value="props">
+    {{ model_select('props', 'props-model', props) }}
+    <div class="form-row">
+      <label for="props-mode">Given</label>
+      <select id="props-mode" name="mode">{{ options({'altitude': 'Pressure altitude', 'pressure': 'Static pressure'}, val('props', 'mode', 'altitude')) }}</select>
+      {{ field_error(props, 'mode') }}
+    </div>
+    <div class="form-row">
+      <label for="props-value">Value</label>
+      <input id="props-value" name="value" type="text" inputmode="decimal" value="{{ val('props', 'value', '35000') }}">
+      {{ field_error(props, 'value') }}
+    </div>
+    <div class="form-row">
+      <label for="props-unit">Units</label>
+      <select id="props-unit" name="unit">
+        <optgroup label="Altitude">{{ options({'ft': 'ft', 'm': 'm'}, val('props', 'unit', 'ft')) }}</optgroup>
+        <optgroup label="Pressure">{{ options({'psf': 'psf', 'psi': 'psi', 'pa': 'Pa', 'atm': 'atm', 'bar': 'bar'}, val('props', 'unit', 'ft')) }}</optgroup>
+      </select>
+      {{ field_error(props, 'unit') }}
+    </div>
+    <div class="form-row tool-submit">
+      <button type="submit" class="btn btn-primary">compute</button>
+    </div>
+  </form>
+
+  {% if props and props.message %}
+  <p class="error">! {{ props.message }}</p>
+  {% elif props and props.result %}
+  {% set r = props.result %}
+  <div class="table-scroll">
+    <table class="tool-results">
+      <thead><tr><th>Property</th><th class="num">Value</th><th>Unit</th></tr></thead>
+      <tbody>
+        <tr><td>Pressure altitude</td><td class="numeric">{{ "{:,.1f}".format(r.h_press_ft) }}</td><td>ft</td></tr>
+        <tr><td>Static pressure</td><td class="numeric">{{ "{:.3f}".format(r.p_static_psf) }}</td><td>psf</td></tr>
+        <tr><td>Density ratio &sigma;</td><td class="numeric">{{ "{:.4f}".format(r.pho_ratio) }}</td><td>&ndash;</td></tr>
+        <tr><td>Air density</td><td class="numeric">{{ "{:.4e}".format(r.pho_slug_ft3) }}</td><td>slug/ft&sup3;</td></tr>
+        <tr><td>Temperature</td><td class="numeric">{{ "{:.1f}".format(r.temp_degR) }}</td><td>&deg;R</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Speed conversion ───────────────────────────── -->
+  <h2 id="speed">Speed conversion</h2>
+  <form method="get" action="/projects/atmos#speed" class="tool-form">
+    <input type="hidden" name="calc" value="speed">
+    {{ model_select('speed', 'speed-model', speed) }}
+    <div class="form-row">
+      <label for="speed-alt">Pressure altitude</label>
+      <input id="speed-alt" name="alt" type="text" inputmode="decimal" value="{{ val('speed', 'alt', '35000') }}">
+      {{ field_error(speed, 'alt') }}
+    </div>
+    <div class="form-row">
+      <label for="speed-alt-unit">Altitude units</label>
+      <select id="speed-alt-unit" name="alt_unit">{{ options({'ft': 'ft', 'm': 'm'}, val('speed', 'alt_unit', 'ft')) }}</select>
+      {{ field_error(speed, 'alt_unit') }}
+    </div>
+    <div class="form-row">
+      <label for="speed-type">Given</label>
+      <select id="speed-type" name="speed_type">{{ options(tool.SPEED_TYPES, val('speed', 'speed_type', 'mach')) }}</select>
+      {{ field_error(speed, 'speed_type') }}
+    </div>
+    <div class="form-row">
+      <label for="speed-value">Speed</label>
+      <input id="speed-value" name="value" type="text" inputmode="decimal" value="{{ val('speed', 'value', '0.84') }}">
+      {{ field_error(speed, 'value') }}
+    </div>
+    <div class="form-row">
+      <label for="speed-unit">Speed units (not used for Mach)</label>
+      <select id="speed-unit" name="unit">{{ options({'kts': 'kts', 'm/s': 'm/s'}, val('speed', 'unit', 'kts')) }}</select>
+      {{ field_error(speed, 'unit') }}
+    </div>
+    <div class="form-row tool-submit">
+      <button type="submit" class="btn btn-primary">convert</button>
+    </div>
+  </form>
+
+  {% if speed and speed.message %}
+  <p class="error">! {{ speed.message }}</p>
+  {% elif speed and speed.result %}
+  {% set r = speed.result %}
+  <p class="meta">At {{ "{:,.0f}".format(r.alt_ft) }} ft pressure altitude</p>
+  <div class="table-scroll">
+    <table class="tool-results">
+      <thead><tr><th>Speed</th><th class="num">Value</th><th>Unit</th></tr></thead>
+      <tbody>
+        <tr><td>Mach</td><td class="numeric">{{ "{:.4f}".format(r.Mach) }}</td><td>&ndash;</td></tr>
+        <tr><td>True airspeed</td><td class="numeric">{{ "{:.1f}".format(r.ktas) }}</td><td>KTAS</td></tr>
+        <tr><td>Equivalent airspeed</td><td class="numeric">{{ "{:.1f}".format(r.keas) }}</td><td>KEAS</td></tr>
+        <tr><td>Calibrated airspeed</td><td class="numeric">{{ "{:.1f}".format(r.kcas) }}</td><td>KCAS</td></tr>
+        <tr><td>Impact pressure q<sub>c</sub></td><td class="numeric">{{ "{:.3f}".format(r.q_c) }}</td><td>psf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Speed-altitude chart ───────────────────────── -->
+  <h2 id="chart">Speed-altitude chart</h2>
+  <form method="get" action="/projects/atmos#chart" class="tool-form">
+    <input type="hidden" name="calc" value="chart">
+    <div class="form-row">
+      <label for="chart-model">Atmospheric model</label>
+      <select id="chart-model" name="model">{{ options(tool.MODELS, chart.model) }}</select>
+    </div>
+    <div class="form-row">
+      <label for="chart-x">Horizontal axis</label>
+      <select id="chart-x" name="x">{{ options(tool.CHART_TYPES, chart.x) }}</select>
+    </div>
+    <div class="form-row">
+      <label for="chart-envelope">Speed envelope</label>
+      <select id="chart-envelope" name="envelope">{{ options(tool.ENVELOPES, chart.envelope) }}</select>
+    </div>
+    <div class="form-row tool-submit">
+      <button type="submit" class="btn btn-primary">draw</button>
+    </div>
+  </form>
+
+  <h3>Pressure altitude vs {{ tool.CHART_TYPES[chart.x] }} — {{ tool.ENVELOPES[chart.envelope] }}</h3>
+  <p class="meta">Constant KCAS (blue, solid), KEAS (green, dashed), KTAS (coral, dotted) and Mach (grey) lines.</p>
+  <figure class="tool-chart">
+    <a href="/projects/atmos/chart.svg?model={{ chart.model | urlencode }}&amp;x={{ chart.x | urlencode }}&amp;envelope={{ chart.envelope | urlencode }}">
+      <img loading="lazy" width="1300" height="900"
+           src="/projects/atmos/chart.svg?model={{ chart.model | urlencode }}&amp;x={{ chart.x | urlencode }}&amp;envelope={{ chart.envelope | urlencode }}"
+           alt="Speed-altitude chart: pressure altitude against {{ tool.CHART_TYPES[chart.x] }} for the {{ tool.MODELS[chart.model] }} model">
+    </a>
+  </figure>
+</div>
+{% endblock %}

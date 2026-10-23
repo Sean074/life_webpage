@@ -67,6 +67,11 @@ Updated 2026-06-13. Closed items moved to `closed_todo.md`.
   - Data source: **static** — a `content/projects/` Markdown-with-frontmatter set (mirrors the blog) or a single `projects.yaml` loaded by `app/services/projects.py`. **No GitHub API** — keeps to the no-third-party-scripts / no-external-API rule
   - Add to public nav alongside Blog, Gallery, Contact; link to it from `/contact`
   - Optional: one screenshot per project served from `data/images` (reuse the gallery serving path), staying within the spartan aesthetic
+- [ ] **ATMOS web tool: deploy** (branch `atmos-web`; atmos PR #8 merged and tagged `v1.1.0`, lock regenerated and Docker image verified on 23 Oct 2026)
+  - Merge `atmos-web` to `main` so Dokploy deploys it; then check `/projects/atmos` on the live site, including on a phone
+- [ ] **2D Flutter web tool** (`/projects/flutter`, same pattern as `/projects/atmos`, see CLAUDE.md "Projects tools")
+  - Package `30_2DFlutter` (`analysis/`, `plotting/` are generic top-level names, so rename them under a package such as `flutter2d`) and give `plot_vg_vf` a pyplot-free `Figure` path
+  - Inputs are open-ended, so the chart can't be cached by whitelist: cap `velocity_range` n_points (e.g. ≤ 500), bound every parameter, add a solve timeout and a per-IP rate limit
 - [ ] **Test mobile on actual Samsung phone**
   - Verify hamburger toggle, Today page, table scroll, chart heights
   - Mobile review findings addressed: hamburger nav, chart heights 80→200px, table scroll containers, Account username display, Today page with totals and 7-day tracker

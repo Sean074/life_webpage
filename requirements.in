@@ -10,3 +10,5 @@ Markdown
 bleach
 pyotp
 qrcode[pil]
+# ATMOS engine for /projects/atmos — pinned to a release tag; bump the tag to update
+atmos @ https://github.com/Sean074/20_ATMOS/archive/refs/tags/v1.1.0.tar.gz
