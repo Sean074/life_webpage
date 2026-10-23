@@ -10,14 +10,22 @@ annotated-types==0.8.0
     # via pydantic
 anyio==4.15.1
     # via starlette
+atmos @ https://github.com/Sean074/20_ATMOS/archive/refs/tags/v1.1.0.tar.gz
+    # via -r requirements.in
 bcrypt==5.0.0
     # via -r requirements.in
 bleach==6.4.0
     # via -r requirements.in
 click==8.5.0
     # via uvicorn
+contourpy==1.3.3
+    # via matplotlib
+cycler==0.12.1
+    # via matplotlib
 fastapi==0.159.1
     # via -r requirements.in
+fonttools==4.67.0
+    # via matplotlib
 h11==0.16.0
     # via uvicorn
 idna==3.20
@@ -26,15 +34,30 @@ itsdangerous==2.2.0
     # via -r requirements.in
 jinja2==3.1.6
     # via -r requirements.in
+kiwisolver==1.5.1
+    # via matplotlib
 markdown==3.11.2
     # via -r requirements.in
 markupsafe==3.0.4
     # via jinja2
+matplotlib==3.11.2
+    # via atmos
+numpy==2.4.6
+    # via
+    #   atmos
+    #   contourpy
+    #   matplotlib
+    #   pandas
 opentelemetry-api==1.45.1
     # via fastapi
+packaging==26.3
+    # via matplotlib
+pandas==3.1.0
+    # via atmos
 pillow==13.0.0
     # via
     #   -r requirements.in
+    #   matplotlib
     #   qrcode
 pydantic==2.14.1
     # via fastapi
@@ -42,12 +65,20 @@ pydantic-core==2.50.1
     # via pydantic
 pyotp==2.10.0
     # via -r requirements.in
+pyparsing==3.3.3
+    # via matplotlib
+python-dateutil==3.0.0
+    # via
+    #   matplotlib
+    #   pandas
 python-dotenv==1.2.4
     # via -r requirements.in
 python-multipart==0.0.32
     # via -r requirements.in
 qrcode==8.2
     # via -r requirements.in
+six==1.17.0
+    # via python-dateutil
 starlette==1.9.0
     # via fastapi
 typing-extensions==4.16.0
@@ -63,6 +94,8 @@ typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
+tzdata==2026.5
+    # via python-dateutil
 uvicorn==0.54.0
     # via -r requirements.in
 webencodings==0.6.1
