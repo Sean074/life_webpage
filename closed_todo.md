@@ -109,6 +109,10 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ## Phase 3 — Usability
 
+- [x] **2D Flutter web tool** — 2026-10-23
+  - `30_2DFlutter` packaged as `flutter2d` (PR #15, tag `v1.0.0`) with a pyplot-free `draw_vg_vf(fig, ...)`; pinned in `requirements.in` and re-locked.
+  - `/projects/flutter`: public GET form (SI, p-k only, optional flap DOF, three preset links), results table and inline SVG V-f / V-g chart, plus geometry figure, method and verification text. `app/services/flutter_tool.py` bounds every field, caps the sweep at 500 points, runs one solve at a time (10 s wait, then a "busy" message) and `lru_cache`s results. Per-IP rate limit dropped: the caps keep a solve under ~0.3 s.
+
 - [x] **Mobile pass on all restricted pages** — 2026-06-06
   - Hamburger nav (SVG toggle, `.open` class, no JS library). Chart heights increased 80→200px. Table horizontal scroll containers on Expenses, Health, Wealth, Library. `user.username` display added to Account page. All covered by mobile review findings.
 

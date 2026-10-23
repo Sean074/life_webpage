@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 
 from app.auth import get_current_user
-from app.services import atmos_tool
+from app.services import atmos_tool, flutter_tool
 from app.templates_config import templates
 
 router = APIRouter()
@@ -20,6 +20,11 @@ PROJECTS = [
         "slug": "atmos",
         "name": "ATMOS",
         "tagline": "Standard atmosphere lookups, airspeed conversions and speed-altitude charts — run it in the browser",
+    },
+    {
+        "slug": "flutter",
+        "name": "2D Flutter",
+        "tagline": "p-k flutter analysis of a heave–pitch airfoil section, with an optional flap — run it in the browser",
     },
     {
         "slug": "russian-atelier-year",
@@ -92,6 +97,31 @@ def atmos_chart(model: str = "", x: str = "", envelope: str = ""):
             "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
         },
     )
+
+
+# 2D flutter web tool — same rules as ATMOS. The inputs are open-ended, so the
+# service bounds every field, caps the sweep and runs one solve at a time.
+@router.get("/projects/flutter", response_class=HTMLResponse)
+def flutter_page(request: Request):
+    q = request.query_params
+    preset = q.get("preset")
+    if preset in flutter_tool.PRESETS:
+        values = flutter_tool.PRESETS[preset][1]
+    elif q.get("calc") == "solve":
+        values = dict(q)
+    else:
+        values = flutter_tool.DEFAULT_VALUES
+    outcome = flutter_tool.parse_form(values)
+    if "inputs" in outcome:
+        outcome = flutter_tool.run(outcome["inputs"])
+    return templates.TemplateResponse(request, "projects/flutter.html", {
+        "user": get_current_user(request),
+        "active": "projects",
+        "project": _get_project("flutter"),
+        "values": values,
+        "outcome": outcome,
+        "tool": flutter_tool,
+    })
 
 
 @router.get("/projects/{slug}", response_class=HTMLResponse)

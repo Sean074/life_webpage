@@ -24,6 +24,8 @@ cycler==0.12.1
     # via matplotlib
 fastapi==0.159.1
     # via -r requirements.in
+flutter2d @ https://github.com/Sean074/30_2DFlutter/archive/refs/tags/v1.0.0.tar.gz
+    # via -r requirements.in
 fonttools==4.67.0
     # via matplotlib
 h11==0.16.0
@@ -41,11 +43,14 @@ markdown==3.11.2
 markupsafe==3.0.4
     # via jinja2
 matplotlib==3.11.2
-    # via atmos
+    # via
+    #   atmos
+    #   flutter2d
 numpy==2.4.6
     # via
     #   atmos
     #   contourpy
+    #   flutter2d
     #   matplotlib
     #   pandas
 opentelemetry-api==1.45.1

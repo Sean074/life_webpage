@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}2D Flutter — Projects — Sean O'Meara{% endblock %}
+
+{% macro field(name, spec) -%}
+{% set label, unit = spec[0], spec[1] %}
+{% set errors = outcome.errors or {} %}
+<div class="form-row">
+  <label for="f-{{ name }}">{{ label }} [{{ unit }}]</label>
+  <input id="f-{{ name }}" name="{{ name }}" type="text" inputmode="decimal" value="{{ values.get(name, '') }}">
+  {% if errors.get(name) %}<p class="field-error">! {{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% block content %}
+<div class="project-page">
+  <h1>2D Flutter</h1>
+  <p class="meta">{{ project.tagline }}</p>
+
+  <p>
+    <strong>2D Flutter</strong> finds the flutter speed of a typical airfoil
+    section: a rigid aerofoil on a heave spring and a pitch spring, optionally
+    with a trailing-edge flap on a hinge spring as a third degree of freedom.
+    It sweeps the airspeed, solves the flutter equation at each speed for every
+    structural mode with the p-k method, and reports where the damping of a
+    mode crosses zero. The desktop version is a terminal program; this page
+    runs the same engine
+    (<a href="https://github.com/Sean074/30_2DFlutter">source</a>). Nothing you
+    enter is stored.
+  </p>
+
+  <h2>The section</h2>
+  <div class="project-figures project-figures-wide">
+    <figure>
+      <img src="/static/img/projects/flutter/section_geometry.png" loading="lazy"
+           width="1650" height="990"
+           alt="Typical section: an aerofoil on a heave spring and a pitch spring at the elastic axis, with the quarter chord, elastic axis, CG and mid-chord marked, and the offsets a b and x-alpha b">
+      <figcaption>Geometry, degrees of freedom and sign conventions (drawn to scale for the shipped defaults).</figcaption>
+    </figure>
+  </div>
+  <p>
+    Positions are in semi-chords <em>b</em>. <em>a</em> places the elastic axis
+    aft of mid-chord (negative is forward), <em>x<sub>α</sub></em> places the
+    CG aft of the elastic axis, and the flap hinge <em>c</em> is measured aft of
+    mid-chord, between &minus;1 and 1. The pitch inertia I<sub>α</sub> is about
+    the elastic axis for the whole section, flap included; the flap CG offset
+    x<sub>β</sub> is aft of the hinge and normalised by the total mass. Spring
+    stiffnesses come from the uncoupled frequencies: k<sub>h</sub> = ω<sub>h</sub>&sup2;m,
+    k<sub>α</sub> = ω<sub>α</sub>&sup2;I<sub>α</sub>, k<sub>β</sub> = ω<sub>β</sub>&sup2;I<sub>β</sub>.
+    Inputs and outputs are SI.
+  </p>
+
+  <!-- ── Run it ─────────────────────────────────────── -->
+  {% set errors = outcome.errors or {} %}
+  <h2 id="run">Run it</h2>
+  <p>
+    Start from a preset:
+    {% for key, preset in tool.PRESETS.items() %}<a href="/projects/flutter?preset={{ key }}#results">{{ preset[0] }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}
+  </p>
+
+  <form method="get" action="/projects/flutter#results">
+    <input type="hidden" name="calc" value="solve">
+
+    <h3>Section</h3>
+    <div class="tool-form">
+      {% for name, spec in tool.SECTION_FIELDS.items() %}{{ field(name, spec) }}{% endfor %}
+    </div>
+
+    <h3>Flap</h3>
+    <div class="tool-form">
+      <div class="form-row">
+        <label for="f-dof">Degrees of freedom</label>
+        <select id="f-dof" name="dof">
+          {% for key, label in tool.DOF_CHOICES.items() %}<option value="{{ key }}"{% if values.get('dof') == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        {% if errors.get('dof') %}<p class="field-error">! {{ errors.dof }}</p>{% endif %}
+      </div>
+      {% for name, spec in tool.FLAP_FIELDS.items() %}{{ field(name, spec) }}{% endfor %}
+    </div>
+    <p class="meta">The flap values are used only with 3 degrees of freedom.</p>
+
+    <h3>Speed sweep</h3>
+    <div class="tool-form">
+      {% for name, spec in tool.SWEEP_FIELDS.items() %}{{ field(name, spec) }}{% endfor %}
+      <div class="form-row">
+        <label for="f-n_points">Points [max {{ tool.MAX_POINTS }}]</label>
+        <input id="f-n_points" name="n_points" type="text" inputmode="numeric" value="{{ values.get('n_points', '') }}">
+        {% if errors.get('n_points') %}<p class="field-error">! {{ errors.n_points }}</p>{% endif %}
+      </div>
+      <div class="form-row tool-submit">
+        <button type="submit" class="btn btn-primary">solve</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ── Results ────────────────────────────────────── -->
+  <h2 id="results">Results</h2>
+  {% if outcome.errors %}
+  <p class="error">! Check the inputs marked above.</p>
+  {% elif outcome.message %}
+  <p class="error">! {{ outcome.message }}</p>
+  {% else %}
+  {% set r = outcome.result %}
+  {% set fluttering = r.modes | selectattr('v_flutter_m_s') | sort(attribute='v_flutter_m_s') | list %}
+  {% if fluttering %}
+  {% set first = fluttering[0] %}
+  <p><strong>Flutter at {{ "%.2f" | format(first.v_flutter_m_s) }} m/s</strong>
+     (mode {{ first.number }}, {{ "%.2f" | format(first.omega_flutter_rad_s) }} rad/s).</p>
+  {% else %}
+  <p><strong>No flutter</strong> between {{ values.v_min_m_s }} and {{ values.v_max_m_s }} m/s.</p>
+  {% endif %}
+  <div class="table-scroll">
+    <table class="tool-results">
+      <thead>
+        <tr><th>Mode</th><th class="num">In-vacuo ω [rad/s]</th><th class="num">V<sub>F</sub> [m/s]</th><th class="num">ω<sub>F</sub> [rad/s]</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        {% for m in r.modes %}
+        <tr>
+          <td>{{ m.number }}</td>
+          <td class="numeric">{{ "%.2f" | format(m.omega_rad_s) }}</td>
+          <td class="numeric">{{ "%.2f" | format(m.v_flutter_m_s) if m.v_flutter_m_s is not none else "—" }}</td>
+          <td class="numeric">{{ "%.2f" | format(m.omega_flutter_rad_s) if m.omega_flutter_rad_s is not none else "—" }}</td>
+          <td>{% if m.v_flutter_m_s is none %}no flutter in range{% endif %}{% if m.ends_at_m_s is not none %}{% if m.v_flutter_m_s is none %}; {% endif %}tracking ends at {{ "%.1f" | format(m.ends_at_m_s) }} m/s{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <figure class="tool-chart" aria-label="V-f and V-g flutter diagram">
+    {{ r.svg | safe }}
+  </figure>
+  <p class="meta">
+    Top: frequency of each mode against speed. Bottom: damping g; a mode
+    flutters where g crosses zero (dashed line). The dotted line is the
+    g&nbsp;=&nbsp;0.03 allowable.
+  </p>
+  {% endif %}
+
+  <h2>Method</h2>
+  <p>
+    For each mode and speed V the p-k equation
+    [(V/b)&sup2;p&sup2;M + K &minus; &rho;&pi;bV&sup2;A(k)]x = 0, with k = Im(p), is
+    solved by fixed-point iteration on k: with k fixed it is an eigenproblem in
+    p, the root nearest the mode's current estimate is kept, and k is updated
+    until it converges. A(k) is Theodorsen's oscillatory aerodynamics (with
+    the flap T-functions for the third degree of freedom), using R.&nbsp;T.&nbsp;Jones'
+    two-pole approximation of C(k) from NACA Report&nbsp;681. Modes are seeded
+    from the coupled in-vacuo frequencies and extrapolated from speed to speed,
+    so each curve stays one mode. Damping is shown as g = 2&nbsp;Re(p)/Im(p),
+    the flutter convention, so g&nbsp;=&nbsp;0.03 is 1.5&nbsp;% critical damping.
+  </p>
+  <p>
+    A mode the iteration can no longer follow (its frequency falls to zero near
+    static divergence, or it stops oscillating because it is so heavily damped)
+    ends at that speed; the other modes carry on and the table notes where.
+    The flow is incompressible, so results at high speeds are only indicative.
+  </p>
+
+  <h2>Verification</h2>
+  <p>
+    The textbook section of Hodges &amp; Pierce, <em>Introduction to Structural
+    Dynamics and Aeroelasticity</em>, ch.&nbsp;5 (a = &minus;1/5, x<sub>α</sub> = 1/10,
+    &mu; = 20, r&sup2; = 6/25, ω<sub>h</sub>/ω<sub>α</sub> = 2/5) is a regression
+    test: V<sub>F</sub>/(bω<sub>α</sub>) = 2.1704 and ω<sub>F</sub>/ω<sub>α</sub> = 0.644.
+    An independent k-method solve gives the same values; with the exact
+    Theodorsen function it gives 2.184, so the Jones approximation costs about
+    0.6&nbsp;%.
+  </p>
+</div>
+{% endblock %}

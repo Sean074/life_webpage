@@ -849,6 +849,11 @@ th.num {
   margin-bottom: 1rem;
 }
 
+/* Room for a label that wraps to two lines, so the inputs in a grid row align. */
+.tool-form .form-row label {
+  min-height: 2lh;
+}
+
 .tool-submit {
   align-self: end;
 }
@@ -867,4 +872,16 @@ th.num {
   width: 100%;
   height: auto;
   border: 1px solid var(--border);
+}
+
+.tool-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}
+
+.project-figures-wide {
+  grid-template-columns: 1fr;
+  max-width: 50rem;
 }
