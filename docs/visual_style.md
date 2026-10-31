@@ -58,7 +58,7 @@ No gradients. No shadows (except a single 1px border-bottom where a shadow might
 
 - Top bar: site name on the left (plain text, no logo), nav links on the right.
 - Active link: underlined, no other treatment.
-- Restricted links (Library, Expenses, Wealth, Health) do not appear in the nav for unauthenticated users.
+- Restricted links (Expenses, Wealth, Health) do not appear in the nav for unauthenticated users.
 - At ≤600px a hamburger toggle button (plain SVG, `currentColor`, no JS library) collapses the nav-links. Clicking the button toggles an `.open` class that shows/hides the link list. No off-canvas drawer — links simply expand below the site name.
 
 ---
@@ -131,4 +131,3 @@ None. No transitions, no animations, no skeleton loaders. If something takes tim
 
 **Expenses / Wealth / Health** — dense tabular data is expected; prioritize readable tables over cards. Summaries at the top, detail below.
 
-**Library** — index page only: a plain list of documents with title, date, and one-line description. No visual embellishment.

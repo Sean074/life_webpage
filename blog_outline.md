@@ -45,13 +45,6 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 
 ---
 
-### Library — `/library` (restricted — any logged-in user)
-- Plain list of documents: title, date, one-line description
-- Not in public nav; not in sitemaps
-- Admin only: add/remove documents
-
----
-
 ### Expenses — `/expenses` (restricted — any logged-in user)
 - Summary totals at top; detailed transaction table below
 - tracks spending (debit) only. Income (credit) is not tracked.
@@ -115,7 +108,7 @@ Personal site built with FastAPI + Jinja2 + HTMX. Monochrome, terminal-aesthetic
 
 - Top bar: site name (left), nav links (right)
 - Unauthenticated: Blog, Gallery
-- Authenticated: Blog, Gallery, Library, Expenses, Wealth, Health + Logout
+- Authenticated: Blog, Gallery, Expenses, Wealth, Health + Logout
 - Active link underlined; no other treatment
 
 ---

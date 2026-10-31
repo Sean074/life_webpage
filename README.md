@@ -1,6 +1,6 @@
 # Life
 
-Personal website with six areas: Blog, Gallery, Library, Expenses, Wealth, and Health.
+Personal website with five areas: Blog, Gallery, Expenses, Wealth, and Health.
 
 ## Stack
 
@@ -85,7 +85,7 @@ app/
   auth.py             # Session helpers, require_auth, require_admin
   routes/
     auth_routes.py    # /login, /logout
-    library.py, blog.py, gallery.py, expenses.py, wealth.py, health.py
+    blog.py, gallery.py, expenses.py, wealth.py, health.py
   models/             # Raw SQL
   templates/          # Jinja2 HTML
   static/             # CSS, JS, images

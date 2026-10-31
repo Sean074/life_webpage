@@ -30,9 +30,7 @@
 - As for order it could be just before Logout.
 
 ## Page 5 Library
-- This is too hard to use.  The table format does not work well on the phone screen
-- HTe database needs more work to ad details and meta dat to items already there.
-- HTe phone usage may be more about the search, thus a better way to display the search results on the phojne screen would be the most useful changes to this page.
+- Retired 30 Oct 2026 — the reference library is now Paperless-ngx on the Mac mini (`docs/library_paperless.md`).
 
 ## Page 6 Expenses
 - Charts are too hard to read

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal website with six areas: Blog, Gallery, Library (restricted), Expenses (restricted), Wealth (restricted), Health (restricted).
+Personal website with five areas: Blog, Gallery, Expenses (restricted), Wealth (restricted), Health (restricted). The former Library area was retired in favour of Paperless-ngx on the Mac mini (see `docs/library_paperless.md`).
 
 ## Stack
 
@@ -78,7 +78,7 @@ app/
   auth.py             # get_current_user, require_auth, require_admin, session helpers
   routes/             # Thin handlers only — logic in services/
     auth_routes.py    # GET/POST /login, GET /logout
-    library.py, blog.py, gallery.py, expenses.py, wealth.py, health.py
+    blog.py, gallery.py, expenses.py, wealth.py, health.py
   models/             # Raw SQL only (prefer raw for simple queries)
   templates/          # Jinja2 HTML
   static/             # CSS, JS, images
@@ -127,7 +127,7 @@ Do this before ending the session — never leave a finished task unmarked or si
 
 **Gallery:** Images referenced by path in DB. Lazy-load; never ship full-resolution to browser. `GET /gallery` is public. Upload routes are admin only.
 
-**Library/Expenses/Wealth/Health:** All restricted — any logged-in user (`require_auth`) can view; write operations require `require_admin`. `/library` must not appear in sitemaps or public nav. Charts: server-rendered SVG or bundled JS chart library; no CDN scripts.
+**Expenses/Wealth/Health:** All restricted — any logged-in user (`require_auth`) can view; write operations require `require_admin`. Charts: server-rendered SVG or bundled JS chart library; no CDN scripts.
 
 **Expenses transactions schema:** `date`, `amount`, `description`, `category`, `account`, `type` (debit). Tracks spending only — income/credit rows are not stored. Transactions are entered manually only — no CSV import. Categories are user-defined in DB. Default seed categories: home, entertainment, shopping, hobbies, eating out, other. Top-level metrics: 6-month rolling average spend/day, 30-day average spend/day, and monthly totals for current month + prior 2. Monthly totals chart defaults to combined total; a dropdown allows filtering to a single category.
 

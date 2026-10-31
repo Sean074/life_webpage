@@ -298,10 +298,6 @@ pre code {
   padding: 0.1rem 0.4rem;
 }
 
-.incomplete td {
-  color: var(--muted);
-}
-
 td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;

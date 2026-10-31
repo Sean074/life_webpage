@@ -25,7 +25,6 @@
         {% if user.role == 'admin' %}
           <a href="/gallery/upload"{% if active == 'gallery_upload' %} class="active"{% endif %}>Upload</a>
         {% endif %}
-        <a href="/library"{% if active == 'library' %} class="active"{% endif %}>Library</a>
         <a href="/expenses"{% if active == 'expenses' %} class="active"{% endif %}>Expenses</a>
         <a href="/wealth"{% if active == 'wealth' %} class="active"{% endif %}>Wealth</a>
         <a href="/health"{% if active == 'health' %} class="active"{% endif %}>Health</a>
