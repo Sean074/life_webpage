@@ -38,4 +38,8 @@ fi
 
 sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/011_backup_codes.sql"
 
+# 012 drops the retired Library tables (see docs/library_paperless.md).
+# 001 is CREATE TABLE IF NOT EXISTS, so create-then-drop is idempotent.
+sqlite3 "$DB" < "$SCRIPT_DIR/../migrations/012_drop_library.sql"
+
 echo "Database initialisation complete."

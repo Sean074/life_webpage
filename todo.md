@@ -1,6 +1,6 @@
 # Life — Path to v1
 
-Updated 2026-06-13. Closed items moved to `closed_todo.md`.
+Updated 2026-10-30. Closed items moved to `closed_todo.md`.
 
 ---
 
@@ -31,9 +31,6 @@ Updated 2026-06-13. Closed items moved to `closed_todo.md`.
 ## Phase 2.5 — Code hygiene
 
 **Goal:** Remove accumulated dead code and inconsistencies before the codebase grows further. None of these change behaviour — they make the next phase easier to navigate.
-
-### Dead code removal
-
 
 ### Pattern consistency
 
@@ -67,8 +64,7 @@ Updated 2026-06-13. Closed items moved to `closed_todo.md`.
   - Data source: **static** — a `content/projects/` Markdown-with-frontmatter set (mirrors the blog) or a single `projects.yaml` loaded by `app/services/projects.py`. **No GitHub API** — keeps to the no-third-party-scripts / no-external-API rule
   - Add to public nav alongside Blog, Gallery, Contact; link to it from `/contact`
   - Optional: one screenshot per project served from `data/images` (reuse the gallery serving path), staying within the spartan aesthetic
-- [ ] **Projects web tools: check live** (ATMOS merged to `main` in PR #11 on 23 Oct 2026; 2D Flutter on branch `flutter-web`)
-  - Merge `flutter-web` so Dokploy deploys it
+- [ ] **Projects web tools: check live** (ATMOS merged in PR #11, 2D Flutter in PR #12; both on `main`)
   - Check `/projects/atmos` and `/projects/flutter` on the live site, including on a phone: run each form once and each flutter preset
 - [ ] **Test mobile on actual Samsung phone**
   - Verify hamburger toggle, Today page, table scroll, chart heights

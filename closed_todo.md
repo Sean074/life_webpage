@@ -81,6 +81,9 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ## Phase 2.5 — Code hygiene
 
+- [x] **Retire the Library area** — 2026-10-30
+  - Removed `/library` (model, routes, five templates, `scripts/seed_library.py`, nav + home links, orphaned `.incomplete` CSS). Added `migrations/012_drop_library.sql` (drops `library_items`, `library_item_tags`, `tags`) and wired it into `scripts/init_db.sh`. Docs updated to five areas. Rationale and Paperless-ngx mapping in `docs/library_paperless.md`.
+
 - [x] **Move inline `import logging` in `app/routes/expenses.py` to top of file**
   - Done as part of the Phase 1 narrow-exception-catch item (2026-05-30). `expenses.py:1-2` now has `import csv` and `import logging` at the top.
 

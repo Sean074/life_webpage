@@ -91,8 +91,8 @@ async def index(request: Request):
 | Route type | Dependency | Examples |
 |------------|-----------|---------|
 | Public read | None (`get_current_user` for nav context) | `GET /`, `GET /blog`, `GET /gallery` |
-| Restricted read | `require_auth` | `GET /library`, `GET /expenses`, `GET /wealth`, `GET /health` |
-| Admin write | `require_admin` | `POST /library/sync`, `POST /library/items/{id}/edit`, `POST /blog/new`, `POST /gallery/upload` |
+| Restricted read | `require_auth` | `GET /expenses`, `GET /wealth`, `GET /health` |
+| Admin write | `require_admin` | `POST /blog/new`, `POST /gallery/upload`, `POST /expenses/transactions` |
 | Auth endpoints | Neither | `GET /login`, `POST /login`, `GET /logout` |
 
 ---
