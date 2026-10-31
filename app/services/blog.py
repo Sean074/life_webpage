@@ -4,7 +4,7 @@ import os
 import re
 from typing import Optional
 
-POSTS_DIR = "content/posts"
+POSTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "content", "posts")
 
 
 def _parse_frontmatter(raw: str) -> tuple:

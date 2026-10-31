@@ -51,12 +51,14 @@
     {% block content %}{% endblock %}
   </main>
   {% set quote = random_quote() %}
+  {% if quote %}
   <footer class="quote-footer">
     <blockquote>
       <p>&#8220;{{ quote.quote }}&#8221;</p>
       <cite>&#8212; {{ quote.author }}{% if quote.source %}, <em>{{ quote.source }}</em>{% endif %}</cite>
     </blockquote>
   </footer>
+  {% endif %}
   <script>
     document.querySelector('.nav-toggle').addEventListener('click', function () {
       document.querySelector('.nav-links').classList.toggle('open');
