@@ -19,7 +19,7 @@ Dokploy is a self-hosted PaaS that manages Docker containers, reverse proxying (
 
 ---
 
-> **Where the UI is (confirmed 31 Oct 2026):** this site is managed by **Dokploy Cloud** at **https://app.dokploy.com**, which treats the Hostinger VPS as a *remote server*. The project, Environment tab, Logs, Terminal and Deploy button are all there. The GitHub App that triggers deploys is `Dokploy-2026-05-30-vxbvnw` and its webhook points at `app.dokploy.com`.
+> **Where the UI is (confirmed 31 Oct 2026):** this site is managed by **Dokploy Cloud** at **https://app.dokploy.com** (sign in with the **GitHub** button, account `Sean074`), which treats the Hostinger VPS as a *remote server*. The project, Environment tab, Logs, Terminal and Deploy button are all there. The GitHub App that triggers deploys is `Dokploy-2026-05-30-vxbvnw` and its webhook points at `app.dokploy.com`.
 >
 > There is also a leftover self-hosted Dokploy on `http://<server-ip>:3000` from the first install in April 2026. It has **no projects** and does nothing. Do not look for the app there.
 

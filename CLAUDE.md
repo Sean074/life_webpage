@@ -53,7 +53,7 @@ pip install -r requirements.lock
 
 ## Deploying
 
-Hosted on a Hostinger VPS running Docker, managed by **Dokploy Cloud (https://app.dokploy.com)** as a remote server, with Traefik as the reverse proxy (auto-provisioned Let's Encrypt SSL). Full steps in `docs/deploy.md`. The UI is app.dokploy.com, **not** `http://<server-ip>:3000`; the Dokploy on port 3000 is an empty leftover from the first install.
+Hosted on a Hostinger VPS running Docker, managed by **Dokploy Cloud (https://app.dokploy.com)** as a remote server, with Traefik as the reverse proxy (auto-provisioned Let's Encrypt SSL). Full steps in `docs/deploy.md`. The UI is app.dokploy.com (sign in with GitHub as `Sean074`), **not** `http://<server-ip>:3000`; the Dokploy on port 3000 is an empty leftover from the first install.
 
 **First deploy (one-time setup via the Dokploy Cloud UI):**
 1. In app.dokploy.com, add the VPS under **Servers** and run **Setup Server**
