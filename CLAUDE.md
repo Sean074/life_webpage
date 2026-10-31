@@ -53,11 +53,11 @@ pip install -r requirements.lock
 
 ## Deploying
 
-Hosted on a Hostinger VPS running Docker via Dokploy, with Traefik as the reverse proxy (auto-provisioned Let's Encrypt SSL). Full steps in `docs/deploy.md`.
+Hosted on a Hostinger VPS running Docker, managed by **Dokploy Cloud (https://app.dokploy.com)** as a remote server, with Traefik as the reverse proxy (auto-provisioned Let's Encrypt SSL). Full steps in `docs/deploy.md`. The UI is app.dokploy.com, **not** `http://<server-ip>:3000`; the Dokploy on port 3000 is an empty leftover from the first install.
 
-**First deploy (one-time setup via Dokploy UI):**
-1. SSH into the VPS and install Dokploy: `curl -sSL https://dokploy.com/install.sh | sh`
-2. Visit `http://<server-ip>:3000` to create the Dokploy admin account
+**First deploy (one-time setup via the Dokploy Cloud UI):**
+1. In app.dokploy.com, add the VPS under **Servers** and run **Setup Server**
+2. Connect GitHub under **Settings → Git** (the current GitHub App is `Dokploy-2026-05-30-vxbvnw`)
 3. Projects → New Project → Add Service → Application; connect Git repo, build type: Dockerfile, port: `8000`
 4. **Environment tab:** set `SECRET_KEY` (generate: `python3 -c "import secrets; print(secrets.token_hex(32))"`) and `HTTPS_ONLY=true`
 5. **Mounts tab:** add volume `/var/lib/dokploy/volumes/life-data` → `/app/data`; create it first: `ssh root@<server-ip> "mkdir -p /var/lib/dokploy/volumes/life-data/images"`
@@ -69,7 +69,7 @@ Hosted on a Hostinger VPS running Docker via Dokploy, with Traefik as the revers
    ```
 8. Seed existing data (first deploy only): `rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/`
 
-**Subsequent deploys:** push to the tracked branch (Dokploy auto-deploys via webhook), or click **Deploy** in the UI.
+**Subsequent deploys:** merge to `main` (the GitHub App deploys within ~2 minutes), or click **Deploy** in app.dokploy.com.
 
 **Common ops:**
 - Logs: Dokploy UI → application → **Logs** tab

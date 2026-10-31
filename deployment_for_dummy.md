@@ -85,7 +85,7 @@ If you ever run multiple apps on the same server, Traefik routes each domain to 
 - Triggering Let's Encrypt cert requests
 - Showing you logs and a Terminal for each container
 
-Think of it as a lightweight, self-hosted version of Heroku or Vercel. You install it once on the VPS, then everything else happens through `http://<vps-ip>:3000`.
+Think of it as a lightweight version of Heroku or Vercel. **This site uses the hosted version, Dokploy Cloud:** the control panel lives at https://app.dokploy.com and manages the VPS over SSH as a "remote server". The self-hosted steps below (installing Dokploy on the VPS, port 3000) describe the first attempt in April 2026 and are kept for background only. The Dokploy still listening on port 3000 has no projects in it.
 
 ---
 
@@ -144,7 +144,7 @@ You should see both `:80` and `:443` with `docker-proxy` as the listening proces
 
 ### S4 — Create the Dokploy admin account
 
-Open `http://<vps-ip>:3000` in your browser. First visit prompts you to create an admin account. Set a strong password and save it in your password manager.
+*(Self-hosted only. For this site, create the account at https://app.dokploy.com instead.)* Open `http://<vps-ip>:3000` in your browser. First visit prompts you to create an admin account. Set a strong password and save it in your password manager.
 
 ### S5 — Register the VPS as a "server" inside Dokploy
 
@@ -472,7 +472,7 @@ Print this. Tick each before clicking Deploy on a NEW server.
 
 - [ ] `sudo ss -tulnp | grep -E ':(80|443) '` shows ONLY `docker-proxy` (no nginx, apache, etc.)
 - [ ] `sudo docker ps | grep traefik` returns a running `dokploy-traefik`
-- [ ] Dokploy admin account created at `http://<vps-ip>:3000`
+- [ ] Dokploy Cloud account at https://app.dokploy.com (self-hosted alternative: `http://<vps-ip>:3000`)
 - [ ] Server registered in Dokploy with **public** IP (not 127.0.0.1)
 - [ ] SSH Test Connection passes from Dokploy → server
 - [ ] GitHub App connected (private repos only) OR repo is public

@@ -19,20 +19,19 @@ Dokploy is a self-hosted PaaS that manages Docker containers, reverse proxying (
 
 ---
 
-### 1. Install Dokploy on the VPS
+> **Where the UI is (confirmed 31 Oct 2026):** this site is managed by **Dokploy Cloud** at **https://app.dokploy.com**, which treats the Hostinger VPS as a *remote server*. The project, Environment tab, Logs, Terminal and Deploy button are all there. The GitHub App that triggers deploys is `Dokploy-2026-05-30-vxbvnw` and its webhook points at `app.dokploy.com`.
+>
+> There is also a leftover self-hosted Dokploy on `http://<server-ip>:3000` from the first install in April 2026. It has **no projects** and does nothing. Do not look for the app there.
 
-```bash
-ssh root@<server-ip>
-curl -sSL https://dokploy.com/install.sh | sh
-```
+### 1. Connect the VPS to Dokploy Cloud
 
-Dokploy will start on port `3000`. Visit `http://<server-ip>:3000` to complete the web UI setup and create your admin account.
+In https://app.dokploy.com: **Servers → Add Server**, give it the VPS IP and root SSH key, then run the **Setup Server** action. That installs Docker Swarm, the `dokploy-network` and Traefik on the VPS. No Dokploy control plane runs on the VPS itself.
 
 ---
 
 ### 2. Create the Application in Dokploy
 
-In the Dokploy UI:
+In the Dokploy Cloud UI (https://app.dokploy.com):
 
 1. **Projects → New Project** → create a project (e.g. `life`)
 2. **Add Service → Application**
@@ -84,13 +83,13 @@ In the application's **Domains** tab:
 
 ### 6. Deploy
 
-Click **Deploy** in the Dokploy UI (or push to your configured branch — Dokploy can auto-deploy on push via webhook).
+Click **Deploy** in the Dokploy Cloud UI, or merge to `main`: the GitHub App deploys a merge within about two minutes.
 
 ---
 
 ### 7. Initialise the Database and Create Your Admin User
 
-After the first successful deploy, open the application's **Terminal** tab in Dokploy and run:
+After the first successful deploy, open the application's **Terminal** tab in Dokploy Cloud and run:
 
 ```bash
 # Run migrations
@@ -142,9 +141,12 @@ A dated directory should appear. After 24 hours a second directory confirms the 
 
 ### Ongoing Operations
 
+All UI references below mean **https://app.dokploy.com**.
+
 | Task | How |
 |------|-----|
-| Deploy new code | Push to the tracked branch (auto-deploy), or click **Deploy** in UI |
+| Deploy new code | Merge to `main` (auto-deploy), or click **Deploy** in UI |
+| Check env vars from the server | `docker service inspect life-life-crtzvp --format '{{range .Spec.TaskTemplate.ContainerSpec.Env}}{{println .}}{{end}}' \| awk -F= '{print $1, length($2), "chars"}'` (names and lengths only) |
 | View logs | Dokploy UI → application → **Logs** tab |
 | Restart app | Dokploy UI → application → **Restart** |
 | Add a user | Dokploy UI → application → **Terminal** → `python scripts/create_user.py --username X --role user` |
