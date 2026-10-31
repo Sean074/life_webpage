@@ -1,16 +1,11 @@
 # Life — Path to v1
 
-Updated 2026-10-30. Closed items moved to `closed_todo.md`.
+Updated 2026-10-31. Closed items moved to `closed_todo.md`.
 
 ---
 
 ## Phase 2 — Data correctness
 
-- [ ] **Wealth projection regression test**
-  - One scenario with known inputs and hand-computed expected outputs
-  - These numbers inform real financial decisions — they need to be auditable
-- [ ] **Rate-limit dict prune** ([app/routes/auth_routes.py:19](app/routes/auth_routes.py:19))
-  - Periodic sweep to drop empty entries
 - [ ] **Data export (admin)**
   - CSV + JSON download endpoints for Expenses, Wealth (accounts + history), and Health
   - Mount under `/admin/export/<area>.<format>`, behind `require_admin`
@@ -118,9 +113,6 @@ Updated 2026-10-30. Closed items moved to `closed_todo.md`.
 
 ### Prerequisites (security hardening — do first)
 
-- [ ] **Stand up a pytest suite** — the crypto round-trip (encrypt → store → decrypt, wrong-passphrase rejection) must not ship untested. Pulls forward the Phase 2 test item.
-- [ ] **Hard-fail on default `SECRET_KEY` in production** ([app/auth.py:17](app/auth.py:17))
-  - Currently only warns; a vault must refuse to start with `dev-secret-change-me` when not in debug.
 - [ ] **Fix CSRF cookie kwargs** (Phase 2.5) before adding more POST forms.
 
 ### Build (Option A — encrypted at rest)

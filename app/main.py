@@ -3,13 +3,14 @@ load_dotenv()
 
 import sqlite3
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.exception_handlers import http_exception_handler as default_http_exception_handler
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.auth import get_current_user
+from app.auth import DB_PATH, check_secret_key, get_current_user
 from app.models import expenses as expenses_model
 from app.models import health as health_model
 from app.models import wealth as wealth_model
@@ -29,6 +30,7 @@ from app.templates_config import templates
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    check_secret_key()
     expenses_model.init_db()
     health_model.init_db()
     wealth_model.init_db(seed_accounts=wealth_svc.latest_accounts_from_csv())
@@ -74,7 +76,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 @app.get("/healthz")
 async def healthz():
     try:
-        conn = sqlite3.connect("file:data/app.db?mode=ro", uri=True)
+        conn = sqlite3.connect(f"{Path(DB_PATH).resolve().as_uri()}?mode=ro", uri=True)
         conn.execute("SELECT 1")
         conn.close()
         return {"ok": True}

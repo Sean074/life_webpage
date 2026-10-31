@@ -1,6 +1,7 @@
 import os
 import secrets
 import sqlite3
+import warnings
 from pathlib import Path
 from typing import Optional
 
@@ -13,12 +14,28 @@ COOKIE_NAME = "session"
 SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 
 
+_DEFAULT_SECRET = "dev-secret-change-me"
+
+
+def _secret_key() -> str:
+    # An empty value (e.g. a copied .env.example) counts as unset.
+    return os.environ.get("SECRET_KEY") or _DEFAULT_SECRET
+
+
+def check_secret_key() -> None:
+    """Called once at startup. Production (HTTPS_ONLY=true) must never run on the dev secret."""
+    if _secret_key() != _DEFAULT_SECRET:
+        return
+    if os.environ.get("HTTPS_ONLY", "false").lower() == "true":
+        raise RuntimeError(
+            "SECRET_KEY is unset or still the dev default; refusing to start with HTTPS_ONLY=true. "
+            "Set SECRET_KEY in the Dokploy Environment tab."
+        )
+    warnings.warn("SECRET_KEY is unset — using the insecure dev default", stacklevel=2)
+
+
 def _signer() -> TimestampSigner:
-    secret = os.environ.get("SECRET_KEY", "dev-secret-change-me")
-    if secret == "dev-secret-change-me":
-        import warnings
-        warnings.warn("SECRET_KEY is unset — sessions are insecure", stacklevel=2)
-    return TimestampSigner(secret)
+    return TimestampSigner(_secret_key())
 
 
 def _connect():

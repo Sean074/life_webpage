@@ -57,7 +57,9 @@ def _account_type(name: str) -> str:
 
 
 def load_history() -> list[dict]:
-    """Return [{date, net_worth}] sorted by date from finance.csv."""
+    """Return [{date, net_worth}] sorted by date from finance.csv, or [] if the file is absent."""
+    if not FINANCE_CSV.exists():
+        return []
     with FINANCE_CSV.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         header = next(reader)

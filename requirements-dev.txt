@@ -1,0 +1,6 @@
+# Test-only dependencies. Not installed in the Docker image.
+#   uv pip install -r requirements-dev.txt   (or: pip install -r requirements-dev.txt)
+#   pytest
+-r requirements.txt
+pytest==9.2.0
+httpx==0.28.1
