@@ -26,7 +26,7 @@ uvicorn app.main:app --reload
 
 To add a user: `python scripts/create_user.py --username <name> --role <admin|user>`
 
-The app also needs the gitignored `data/images/` directory and `data/quotes.csv` (columns `quote,author,source`) to start.
+The gitignored `data/images/` directory is created on startup, and `data/quotes.csv` (columns `quote,author,source`) is optional: without it pages render no footer quote. All paths resolve from `__file__`, so the server can be started from any working directory.
 
 ## Testing
 

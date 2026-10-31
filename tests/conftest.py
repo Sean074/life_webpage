@@ -4,7 +4,6 @@ Every test runs against a temporary SQLite database built from migrations/.
 The real data/app.db is never opened.
 """
 import importlib
-import os
 import sqlite3
 from pathlib import Path
 
@@ -12,8 +11,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 ROOT = Path(__file__).resolve().parents[1]
-os.chdir(ROOT)  # the app mounts "app/static", "app/templates" and "data/images" relative to CWD
-(ROOT / "data" / "images").mkdir(parents=True, exist_ok=True)
 
 MIGRATIONS = sorted((ROOT / "migrations").glob("*.sql"))
 

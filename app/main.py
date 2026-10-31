@@ -28,9 +28,15 @@ from app.services.blog import get_recent_posts
 from app.templates_config import templates
 
 
+# Resolve from this file, not the CWD, so the app serves the same files however it is started.
+_ROOT = Path(__file__).resolve().parent.parent
+_IMAGES_DIR = _ROOT / "data" / "images"
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     check_secret_key()
+    _IMAGES_DIR.mkdir(parents=True, exist_ok=True)  # gitignored; absent on a fresh install
     expenses_model.init_db()
     health_model.init_db()
     wealth_model.init_db(seed_accounts=wealth_svc.latest_accounts_from_csv())
@@ -40,8 +46,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-app.mount("/art", StaticFiles(directory="data/images"), name="art")
+app.mount("/static", StaticFiles(directory=_ROOT / "app" / "static"), name="static")
+# check_dir=False: the directory is created in lifespan(), which runs after this module is imported.
+app.mount("/art", StaticFiles(directory=_IMAGES_DIR, check_dir=False), name="art")
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(blog_router)

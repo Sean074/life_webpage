@@ -59,7 +59,7 @@ uvicorn app.main:app --reload
 
 The app will be available at http://localhost:8000.
 
-The app also expects two gitignored files under `data/`: the `data/images/` directory and `data/quotes.csv` (columns `quote,author,source`). Create a one-line `quotes.csv` if you do not have the real one.
+Two gitignored items under `data/` are optional: `data/images/` (created automatically on startup) and `data/quotes.csv` (columns `quote,author,source`; without it pages simply render no footer quote).
 
 **If you get `[Errno 48] Address already in use`**, a previous server process is still running. Stop it and restart:
 
