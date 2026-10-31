@@ -48,7 +48,10 @@ In the application's **Environment** tab, add:
 
 ```
 SECRET_KEY=<generate with: python3 -c "import secrets; print(secrets.token_hex(32))">
+HTTPS_ONLY=true
 ```
+
+With `HTTPS_ONLY=true` the app refuses to start if `SECRET_KEY` is unset, empty, or still the dev default. If the container exits immediately after a deploy, check the Logs tab for `SECRET_KEY is unset`.
 
 ---
 

@@ -59,6 +59,8 @@ uvicorn app.main:app --reload
 
 The app will be available at http://localhost:8000.
 
+The app also expects two gitignored files under `data/`: the `data/images/` directory and `data/quotes.csv` (columns `quote,author,source`). Create a one-line `quotes.csv` if you do not have the real one.
+
 **If you get `[Errno 48] Address already in use`**, a previous server process is still running. Stop it and restart:
 
 ```bash
@@ -68,6 +70,15 @@ lsof -ti :8000 | xargs kill -9
 # Then start the server again
 uvicorn app.main:app --reload
 ```
+
+### 7. Run the tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+Tests build a temporary database from `migrations/` and never open `data/app.db`.
 
 ## Roles
 

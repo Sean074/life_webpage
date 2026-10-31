@@ -2,7 +2,6 @@ import os
 import secrets
 import sqlite3
 import time
-from collections import defaultdict
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -28,20 +27,38 @@ router = APIRouter()
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "app.db")
 
-# rate limiting: {ip: [timestamp, ...]}
-_failures: dict = defaultdict(list)
+# rate limiting: {ip: [failure timestamp, ...]} — only IPs with a recent failure have an entry
+_failures: dict[str, list[float]] = {}
 _RATE_WINDOW = 60
 _RATE_LIMIT = 5
+_last_prune = 0.0
 
 
 def _is_rate_limited(ip: str) -> bool:
     now = time.time()
-    _failures[ip] = [t for t in _failures[ip] if now - t < _RATE_WINDOW]
-    return len(_failures[ip]) >= _RATE_LIMIT
+    recent = [t for t in _failures.get(ip, ()) if now - t < _RATE_WINDOW]
+    if recent:
+        _failures[ip] = recent
+    else:
+        _failures.pop(ip, None)
+    return len(recent) >= _RATE_LIMIT
+
+
+def _prune(now: float) -> None:
+    """Drop IPs whose failures have all expired. Runs at most once per window."""
+    global _last_prune
+    if now - _last_prune < _RATE_WINDOW:
+        return
+    _last_prune = now
+    for ip, stamps in list(_failures.items()):
+        if not stamps or now - stamps[-1] >= _RATE_WINDOW:
+            del _failures[ip]
 
 
 def _record_failure(ip: str) -> None:
-    _failures[ip].append(time.time())
+    now = time.time()
+    _prune(now)
+    _failures.setdefault(ip, []).append(now)
 
 
 def _get_user_by_username(username: str) -> Optional[dict]:

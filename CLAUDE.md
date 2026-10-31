@@ -26,6 +26,17 @@ uvicorn app.main:app --reload
 
 To add a user: `python scripts/create_user.py --username <name> --role <admin|user>`
 
+The app also needs the gitignored `data/images/` directory and `data/quotes.csv` (columns `quote,author,source`) to start.
+
+## Testing
+
+```bash
+pip install -r requirements-dev.txt   # pytest + httpx, not in the Docker image
+pytest
+```
+
+Tests live in `tests/`. `conftest.py` builds a temporary SQLite DB from `migrations/` and points every module's `DB_PATH` at it, so the real `data/app.db` is never touched. Add a test when fixing a bug or changing a calculation (`tests/test_wealth_projection.py` holds hand-computed projection scenarios).
+
 ## Managing Dependencies
 
 - **`requirements.in`** — the human-edited list of direct dependencies. Edit this when adding or upgrading a package.
@@ -90,6 +101,7 @@ docs/
   visual_style.md     # Required UI standard
   auth_standard.md    # Required auth standard
 migrations/           # Plain .sql files — no migration framework
+tests/                # pytest suite — temp DB, see Testing above
 scripts/
   create_user.py      # CLI to add users to the DB
   init_db.sh          # Run all migrations against the correct DB files (idempotent)
@@ -143,6 +155,7 @@ Do this before ending the session — never leave a finished task unmarked or si
 
 - CSRF protection on all POST forms — use the double-submit cookie pattern (see `docs/auth_standard.md`).
 - Rate-limit `POST /login` — already implemented; do not remove.
+- `SECRET_KEY` must be set in production. `check_secret_key()` in `app/auth.py` runs at startup and refuses to start when `HTTPS_ONLY=true` and the key is unset, empty, or the dev default. Do not weaken it.
 - Sanitize all user-supplied content before rendering.
 - Never commit `.env`, DB files, or financial data — enforce via `.gitignore`.
 

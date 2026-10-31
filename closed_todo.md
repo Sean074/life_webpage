@@ -71,6 +71,11 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 ## Phase 2 — Data correctness
 
+- [x] **Wealth projection regression test** — 2026-10-31
+  - `tests/test_wealth_projection.py`: forward and backward projections with hand-worked expected values in comments, a retirement-year scenario, a forward/backward round-trip, and a missing `finance.csv` case. That last one caught a real bug: `/wealth` returned 500 on any deploy without `data/finance.csv`; `load_history()` now returns `[]`.
+- [x] **Rate-limit dict prune** — 2026-10-31
+  - `app/routes/auth_routes.py`: a lookup no longer creates an entry per IP, expired IPs are dropped on lookup, and `_record_failure` sweeps stale IPs at most once per window. Covered by `tests/test_auth_hardening.py`.
+
 - [x] **CSV-import calibration** — 2026-06-06
   - Feature removed entirely. Switched to manual expense entry only. Deleted `app/services/expenses.py`, removed `POST /expenses/import` route, and removed the Import CSV panel from the template.
 
@@ -124,3 +129,12 @@ Completed tasks moved from `todo.md`. Ordered by phase then approximate completi
 
 - [x] **JS local date defaults** — 2026-06-06
   - Inline script in `base.html` sets all `input[type=date]` fields with no value to browser local date, fixing UTC-vs-local mismatch for form defaults.
+
+---
+
+## Phase 5 — Secrets vault (prerequisites)
+
+- [x] **Stand up a pytest suite** — 2026-10-31
+  - `tests/` with `pytest.ini` and `requirements-dev.txt` (pytest + httpx). `conftest.py` builds a temp DB from `migrations/` and patches every `DB_PATH`. Smoke tests cover `/healthz`, public pages, the retired `/library` 404, restricted redirects, and a full login.
+- [x] **Hard-fail on default `SECRET_KEY` in production** — 2026-10-31
+  - `check_secret_key()` in `app/auth.py`, called from the lifespan. Refuses to start when `HTTPS_ONLY=true` and the key is unset, empty (a copied `.env.example`), or the dev default; warns once in dev instead of on every request.
