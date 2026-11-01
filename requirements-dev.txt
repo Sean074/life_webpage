@@ -1,4 +1,4 @@
-# Test-only dependencies. Not installed in the Docker image.
+# Test-only dependencies. Installed in the Dockerfile's `test` stage only, never in the shipped image.
 #   uv pip install -r requirements-dev.txt   (or: pip install -r requirements-dev.txt)
 #   pytest
 -r requirements.txt

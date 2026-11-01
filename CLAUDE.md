@@ -31,11 +31,11 @@ The gitignored `data/images/` directory is created on startup, and `data/quotes.
 ## Testing
 
 ```bash
-pip install -r requirements-dev.txt   # pytest + httpx, not in the Docker image
+pip install -r requirements-dev.txt   # pytest + httpx; installed only in the Dockerfile's test stage
 pytest
 ```
 
-Tests live in `tests/`. `conftest.py` builds a temporary SQLite DB from `migrations/` and points every module's `DB_PATH` at it, so the real `data/app.db` is never touched. Add a test when fixing a bug or changing a calculation (`tests/test_wealth_projection.py` holds hand-computed projection scenarios).
+The Dockerfile runs the suite in a `test` stage that the `runtime` stage depends on, so a failing test fails the Docker build and Dokploy does not deploy. Tests live in `tests/`. `conftest.py` builds a temporary SQLite DB from `migrations/` and points every module's `DB_PATH` at it, so the real `data/app.db` is never touched. Add a test when fixing a bug or changing a calculation (`tests/test_wealth_projection.py` holds hand-computed projection scenarios).
 
 ## Managing Dependencies
 
@@ -69,7 +69,7 @@ Hosted on a Hostinger VPS running Docker, managed by **Dokploy Cloud (https://ap
    ```
 8. Seed existing data (first deploy only): `rsync -avz --progress data/ root@<server-ip>:/var/lib/dokploy/volumes/life-data/`
 
-**Subsequent deploys:** merge to `main` (the GitHub App deploys within ~2 minutes), or click **Deploy** in app.dokploy.com.
+**Subsequent deploys:** merge to `main` (the GitHub App deploys within ~2 minutes), or click **Deploy** in app.dokploy.com. The image build runs `pytest`; a red suite fails the build and leaves the running container as it was.
 
 **Common ops:**
 - Logs: Dokploy UI → application → **Logs** tab
