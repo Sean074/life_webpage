@@ -85,6 +85,8 @@ In the application's **Domains** tab:
 
 Click **Deploy** in the Dokploy Cloud UI, or merge to `main`: the GitHub App deploys a merge within about two minutes.
 
+**The test suite gates every deploy.** The Dockerfile is multi-stage: a `test` stage installs `requirements-dev.txt` and runs `pytest`, and the `runtime` stage copies a marker file out of it. If any test fails, the image build fails, Dokploy records the deployment as failed, and the previously running container is left untouched. The failing assertion is in the build log under the application's **Deployments** tab. The shipped image contains no test dependencies.
+
 ---
 
 ### 7. Initialise the Database and Create Your Admin User
@@ -206,14 +208,14 @@ This runs every Sunday at 09:00 and mirrors only the `backups/` subdirectory (no
 
 ### Local Docker Testing
 
-Before pushing, verify the container works locally:
+Before pushing, verify the container works locally. The build runs the test suite, so a red test stops here too:
 
 ```bash
 docker build -t life .
 docker run -p 8000:8000 -v $(pwd)/data:/app/data --env-file .env life
 ```
 
-Visit `http://localhost:8000`.
+Visit `http://localhost:8000`. `.dockerignore` keeps `data/`, `.env` and `.venv` out of the build context.
 
 ---
 

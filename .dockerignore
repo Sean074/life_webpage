@@ -1,0 +1,13 @@
+# Keep the build context small and keep local data out of the Docker daemon.
+# The Dockerfile COPYs only app/, content/, migrations/, scripts/, tests/ and the requirements files.
+.git
+.venv
+.env
+.env.*
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.claude/
+*.md
+!README.md
